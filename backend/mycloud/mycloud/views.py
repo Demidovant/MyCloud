@@ -39,3 +39,28 @@ class FileViewSet(viewsets.ModelViewSet):
         response['Content-Type'] = 'application/octet-stream'
         response['Content-Disposition'] = f'attachment; filename="{file.name}"'
         return response
+
+    @action(detail=True, methods=['delete'])
+    def delete_file(self, request, pk=None):
+        """Удаление файла"""
+        file = self.get_object()
+        if file.user != request.user:
+            return Response({"detail": "Forbidden"}, status=status.HTTP_403_FORBIDDEN)
+
+        file.delete()
+        return Response({"detail": "File deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=True, methods=['patch'])
+    def rename_file(self, request, pk=None):
+        """Переименование файла"""
+        file = self.get_object()
+        if file.user != request.user:
+            return Response({"detail": "Forbidden"}, status=status.HTTP_403_FORBIDDEN)
+
+        new_name = request.data.get("name")
+        if not new_name:
+            return Response({"detail": "Name field is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        file.name = new_name
+        file.save()
+        return Response({"detail": "File renamed successfully", "new_name": file.name}, status=status.HTTP_200_OK)
