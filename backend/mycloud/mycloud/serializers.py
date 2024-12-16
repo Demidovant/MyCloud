@@ -6,7 +6,7 @@ class FileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = File
-        fields = ['id', 'name', 'file', 'uploaded_at', 'user']
+        fields = ['id', 'name', 'file', 'uploaded_at', 'user', 'comment']
         read_only_fields = ['user']
 
     def create(self, validated_data):

@@ -64,3 +64,17 @@ class FileViewSet(viewsets.ModelViewSet):
         file.name = new_name
         file.save()
         return Response({"detail": "File renamed successfully", "new_name": file.name}, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['patch'])
+    def update_comment(self, request, pk=None):
+        """Обновление комментария к файлу"""
+        file = self.get_object()
+        comment = request.data.get('comment')
+        if comment:
+            file.comment = comment
+            file.save()
+            return Response({"detail": "Comment updated successfully"}, status=status.HTTP_200_OK)
+        else:
+            file.comment = None
+            file.save()
+            return Response({"detail": "Comment cleared successfully"}, status=status.HTTP_200_OK)

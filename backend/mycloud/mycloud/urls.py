@@ -15,4 +15,5 @@ urlpatterns = [
     path("api-token-auth/", obtain_auth_token, name="api_token_auth"),
     path("api/files/<int:id>/rename_file/", FileViewSet.as_view({"patch": "rename_file"})),
     path("api/files/<int:id>/delete_file/", FileViewSet.as_view({"delete": "delete_file"})),
+    path("api/files/<int:id>/update_comment/", FileViewSet.as_view({"patch": "update_comment"})),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
