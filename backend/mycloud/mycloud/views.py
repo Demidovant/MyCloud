@@ -2,11 +2,15 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework import status, viewsets
 from django.conf import settings
-from django.http import HttpResponse, FileResponse
-from .models import File
+from django.http import HttpResponse, FileResponse, Http404
+from .models import File, TemporaryLink
 from .serializers import FileSerializer
 from rest_framework.permissions import IsAuthenticated
 import os
+from django.utils.timezone import now
+from datetime import timedelta
+import secrets
+from django.views import View
 
 class FileViewSet(viewsets.ModelViewSet):
     queryset = File.objects.all()
@@ -60,7 +64,6 @@ class FileViewSet(viewsets.ModelViewSet):
         new_name = request.data.get("name")
         if not new_name:
             return Response({"detail": "Name field is required"}, status=status.HTTP_400_BAD_REQUEST)
-
         file.name = new_name
         file.save()
         return Response({"detail": "File renamed successfully", "new_name": file.name}, status=status.HTTP_200_OK)
@@ -69,6 +72,9 @@ class FileViewSet(viewsets.ModelViewSet):
     def update_comment(self, request, pk=None):
         """Обновление комментария к файлу"""
         file = self.get_object()
+        if file.user != request.user:
+            return Response({"detail": "Forbidden"}, status=status.HTTP_403_FORBIDDEN)
+
         comment = request.data.get('comment')
         if comment:
             file.comment = comment
@@ -78,3 +84,42 @@ class FileViewSet(viewsets.ModelViewSet):
             file.comment = None
             file.save()
             return Response({"detail": "Comment cleared successfully"}, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'])
+    def generate_link(self, request, pk=None):
+        """Генерация временной ссылки на файл"""
+        file = self.get_object()
+        if file.user != request.user:
+            return Response({"detail": "Forbidden"}, status=status.HTTP_403_FORBIDDEN)
+
+        token = secrets.token_urlsafe(32)
+        expires_at = now() + timedelta(hours=1)  # Ссылка будет действительна 1 час
+
+        temporary_link = TemporaryLink.objects.create(file=file, token=token, expires_at=expires_at)
+
+        link = f"{request.build_absolute_uri('/')[:-1]}/api/files/temp/{token}/"
+        return Response({
+            "link": link,
+            "expires_at": expires_at
+        }, status=status.HTTP_201_CREATED)
+
+
+class TemporaryLinkDownloadView(View):
+    def get(self, request, token):
+        """Скачивание файла по временной ссылке"""
+        try:
+            temporary_link = TemporaryLink.objects.get(token=token)
+        except TemporaryLink.DoesNotExist:
+            raise Http404("Temporary link not found")
+
+        if temporary_link.is_expired():
+            raise Http404("Temporary link has expired")
+
+        file_path = os.path.join(settings.MEDIA_ROOT, temporary_link.file.file.name)
+        if not os.path.exists(file_path):
+            raise Http404("File not found")
+
+        response = FileResponse(open(file_path, 'rb'))
+        response['Content-Type'] = 'application/octet-stream'
+        response['Content-Disposition'] = f'attachment; filename="{temporary_link.file.name}"'
+        return response

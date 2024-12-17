@@ -5,6 +5,7 @@ from rest_framework.authtoken.views import obtain_auth_token
 from .views import FileViewSet
 from django.conf import settings
 from django.conf.urls.static import static
+from .views import TemporaryLinkDownloadView
 
 router = DefaultRouter()
 router.register(r"files", FileViewSet)
@@ -16,4 +17,6 @@ urlpatterns = [
     path("api/files/<int:id>/rename_file/", FileViewSet.as_view({"patch": "rename_file"})),
     path("api/files/<int:id>/delete_file/", FileViewSet.as_view({"delete": "delete_file"})),
     path("api/files/<int:id>/update_comment/", FileViewSet.as_view({"patch": "update_comment"})),
+    path('api/files/<int:pk>/download/', FileViewSet.as_view({'get': 'download'})),
+    path('api/files/temp/<str:token>/', TemporaryLinkDownloadView.as_view(), name='temporary_file_download'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
