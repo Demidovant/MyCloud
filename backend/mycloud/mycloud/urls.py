@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from rest_framework.authtoken.views import obtain_auth_token
-from .views import FileViewSet
+from .views import FileViewSet, RegisterUserView, list_users, delete_user, logout
 from django.conf import settings
 from django.conf.urls.static import static
 from .views import TemporaryLinkDownloadView
@@ -19,4 +19,9 @@ urlpatterns = [
     path("api/files/<int:id>/update_comment/", FileViewSet.as_view({"patch": "update_comment"})),
     path('api/files/<int:pk>/download/', FileViewSet.as_view({'get': 'download'})),
     path('api/files/temp/<str:token>/', TemporaryLinkDownloadView.as_view(), name='temporary_file_download'),
+    path('api/users/register/', RegisterUserView.as_view(), name='register'),
+    path('api/users/', list_users, name='list_users'),
+    path('api/users/<int:pk>/', delete_user, name='delete_user'),
+    path('api/users/logout/', logout, name='logout'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+

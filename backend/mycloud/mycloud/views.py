@@ -1,16 +1,20 @@
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.response import Response
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.views import APIView
 from rest_framework import status, viewsets
-from django.conf import settings
-from django.http import HttpResponse, FileResponse, Http404
-from .models import File, TemporaryLink
-from .serializers import FileSerializer
-from rest_framework.permissions import IsAuthenticated
-import os
+from django.contrib.auth.hashers import make_password
 from django.utils.timezone import now
-from datetime import timedelta
-import secrets
+from django.conf import settings
+from django.http import FileResponse, Http404
 from django.views import View
+from datetime import timedelta
+from .models import File, TemporaryLink, CustomUser
+from .serializers import FileSerializer, UserSerializer
+import secrets
+import os
+
 
 class FileViewSet(viewsets.ModelViewSet):
     queryset = File.objects.all()
@@ -47,12 +51,24 @@ class FileViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['delete'])
     def delete_file(self, request, pk=None):
         """Удаление файла"""
-        file = self.get_object()
-        if file.user != request.user:
-            return Response({"detail": "Forbidden"}, status=status.HTTP_403_FORBIDDEN)
+        try:
+            file = self.get_object()
+            if file.user != request.user:
+                return Response({"detail": "Forbidden"}, status=status.HTTP_403_FORBIDDEN)
 
-        file.delete()
-        return Response({"detail": "File deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+            file_path = file.file.path
+
+            if os.path.exists(file_path):
+                os.remove(file_path)
+            else:
+                return Response({"detail": "File not found"}, status=status.HTTP_404_NOT_FOUND)
+
+            file.delete()
+
+            return Response({"detail": "File deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+
+        except ObjectDoesNotExist:
+            return Response({"detail": "File not found"}, status=status.HTTP_404_NOT_FOUND)
 
     @action(detail=True, methods=['patch'])
     def rename_file(self, request, pk=None):
@@ -123,3 +139,56 @@ class TemporaryLinkDownloadView(View):
         response['Content-Type'] = 'application/octet-stream'
         response['Content-Disposition'] = f'attachment; filename="{temporary_link.file.name}"'
         return response
+
+
+class RegisterUserView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        """Регистрация пользователя"""
+        serializer = UserSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"detail": "User created successfully"}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def list_users(request):
+    """Получение списка пользователей для администратора"""
+    if not request.user.is_superuser:
+        return Response({"detail": "Forbidden"}, status=status.HTTP_403_FORBIDDEN)
+
+    users = CustomUser.objects.all()
+    serializer = UserSerializer(users, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_user(request, pk):
+    """Удаление пользователя для администратора"""
+    if not request.user.is_superuser:
+        return Response({"detail": "Forbidden"}, status=status.HTTP_403_FORBIDDEN)
+
+    try:
+        user = CustomUser.objects.get(pk=pk)
+        user.delete()
+        return Response({"detail": "User deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+    except CustomUser.DoesNotExist:
+        return Response({"detail": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+
+from rest_framework.authtoken.models import Token
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def logout(request):
+    """Logout"""
+    try:
+        request.user.auth_token.delete()
+    except (AttributeError, Token.DoesNotExist):
+        pass
+    return Response({"detail": "Logged out successfully"}, status=status.HTTP_200_OK)
