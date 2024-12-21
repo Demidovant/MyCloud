@@ -38,6 +38,13 @@ class File(models.Model):
     file = models.FileField(upload_to=user_directory_path)
     uploaded_at = models.DateTimeField(auto_now_add=True)
     comment = models.TextField(blank=True, null=True)
+    size = models.PositiveIntegerField(null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        """При сохранении файла вычисляем его размер"""
+        if self.file:
+            self.size = self.file.size
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
