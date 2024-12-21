@@ -26,8 +26,52 @@ class CustomUserAdmin(UserAdmin):
     def storage_path(self, obj):
         return obj.storage_path
 
-    storage_path.admin_order_field = 'storage_path'
+    storage_path.admin_order_field = 'Storage_path'
     storage_path.short_description = 'Storage Path'
+
+    actions = ['make_superuser', 'remove_superuser', 'activate_users', 'deactivate_users', 'make_staff', 'remove_staff']
+
+    def make_superuser(self, request, queryset):
+        """Действие для массового присвоения признака администратора"""
+        count = queryset.update(is_superuser=True)
+        self.message_user(request, f"{count} users has been enabled administrators rights.")
+
+    make_superuser.short_description = 'Enable users administrators rights'
+
+    def remove_superuser(self, request, queryset):
+        """Действие для массового удаления признака администратора"""
+        count = queryset.update(is_superuser=False)
+        self.message_user(request, f"{count} users has been disabled users administrators rights.")
+
+    remove_superuser.short_description = 'Disable users administrators rights'
+
+    def activate_users(self, request, queryset):
+        """Действие для массовой активации пользователей"""
+        count = queryset.update(is_active=True)
+        self.message_user(request, f"{count} users have been activated.")
+
+    activate_users.short_description = 'Activate users'
+
+    def deactivate_users(self, request, queryset):
+        """Действие для массовой деактивации пользователей"""
+        count = queryset.update(is_active=False)
+        self.message_user(request, f"{count} users have been deactivated.")
+
+    deactivate_users.short_description = 'Deactivate users'
+
+    def make_staff(self, request, queryset):
+        """Действие для массового присвоения роли staff"""
+        count = queryset.update(is_staff=True)
+        self.message_user(request, f"{count} users have been assigned staff role.")
+
+    make_staff.short_description = 'Assign staff role to users'
+
+    def remove_staff(self, request, queryset):
+        """Действие для массового удаления роли staff"""
+        count = queryset.update(is_staff=False)
+        self.message_user(request, f"{count} users have been removed from staff role.")
+
+    remove_staff.short_description = 'Remove staff role from users'
 
 
 @admin.register(File)
