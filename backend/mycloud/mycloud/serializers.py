@@ -1,4 +1,6 @@
+import os
 from rest_framework import serializers
+from django.conf import settings
 from .models import File, CustomUser
 
 
@@ -18,6 +20,9 @@ class FileSerializer(serializers.ModelSerializer):
             file = validated_data.get('file')
             if file:
                 validated_data['name'] = file.name
+
+        file_storage_path = os.path.join(settings.BASE_FILE_STORAGE_PATH, f"uploads/{user.id}_{user.username}/")
+        validated_data['file'].name = os.path.join(file_storage_path, validated_data['name'])
 
         return super().create(validated_data)
 
@@ -46,7 +51,7 @@ class UserSerializer(serializers.ModelSerializer):
             password=validated_data['password']
         )
 
-        user.storage_path = f'uploads/{user.id}_{user.username}/'
+        user.storage_path = os.path.join(settings.BASE_FILE_STORAGE_PATH, f'uploads/{user.id}_{user.username}/')
         user.save()
 
         return user

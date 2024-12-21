@@ -1,3 +1,4 @@
+import os
 from django.db import models
 from django.conf import settings
 from django.utils.timezone import now
@@ -5,8 +6,11 @@ from django.contrib.auth.models import AbstractUser
 
 
 def user_directory_path(instance, filename):
-    """Функция для генерации пути хранения файлов пользователя."""
-    return f"uploads/{instance.user.id}_{instance.user.username}/{filename}"
+    """Функция для генерации пути хранения файлов пользователя с учетом BASE_FILE_STORAGE_PATH."""
+    user_path = f"uploads/{instance.user.id}_{instance.user.username}/"
+    full_path = os.path.join(settings.BASE_FILE_STORAGE_PATH, user_path)
+    os.makedirs(full_path, exist_ok=True)
+    return os.path.join(user_path, filename)
 
 
 class CustomUser(AbstractUser):
@@ -14,12 +18,12 @@ class CustomUser(AbstractUser):
     storage_path = models.CharField(max_length=255, blank=True, editable=False)
 
     def save(self, *args, **kwargs):
-        """Переопределение метода save для генерации storage_path."""
+        """Переопределение метода save для генерации storage_path с учетом BASE_FILE_STORAGE_PATH."""
         if not self.storage_path:
-            # Сначала вызываем super().save(), чтобы получить ID
             super().save(*args, **kwargs)
-            self.storage_path = f"uploads/{self.id}_{self.username}/"
-        super().save(*args, **kwargs)  # Сохраняем с обновленным storage_path
+            self.storage_path = os.path.join(settings.BASE_FILE_STORAGE_PATH, f"uploads/{self.id}_{self.username}/")
+        os.makedirs(self.storage_path, exist_ok=True)
+        super().save(*args, **kwargs)
 
     @property
     def full_name(self):
