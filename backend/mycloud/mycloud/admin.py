@@ -18,7 +18,9 @@ class CustomUserAdmin(UserAdmin):
     full_name.short_description = 'Full Name'
     full_name.admin_order_field = 'first_name'
 
-    list_display = ('id', 'username', 'email', 'first_name', 'last_name', 'full_name', 'storage_path', 'is_staff')
+    list_display = (
+        'id', 'username', 'email', 'first_name', 'last_name', 'full_name', 'storage_path', 'is_active', 'is_staff',
+        'is_superuser')
     search_fields = ('username', 'email', 'first_name', 'last_name')
 
     def storage_path(self, obj):

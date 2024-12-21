@@ -4,7 +4,6 @@ from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.views import APIView
 from rest_framework import status, viewsets
-from django.contrib.auth.hashers import make_password
 from django.utils.timezone import now
 from django.conf import settings
 from django.http import FileResponse, Http404
