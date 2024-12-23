@@ -7,7 +7,7 @@ from django.contrib.auth.models import AbstractUser
 
 def user_directory_path(instance, filename):
     """Функция для генерации пути хранения файлов пользователя с учетом BASE_FILE_STORAGE_PATH."""
-    user_path = f"uploads/{instance.user.id}_{instance.user.username}/"
+    user_path = os.path.normpath(f"uploads/{instance.user.id}_{instance.user.username}/")
     full_path = os.path.join(settings.BASE_FILE_STORAGE_PATH, user_path)
     os.makedirs(full_path, exist_ok=True)
     return os.path.join(user_path, filename)
@@ -21,7 +21,7 @@ class CustomUser(AbstractUser):
         """Переопределение метода save для генерации storage_path с учетом BASE_FILE_STORAGE_PATH."""
         if not self.storage_path:
             super().save(*args, **kwargs)
-            self.storage_path = os.path.join(settings.BASE_FILE_STORAGE_PATH, f"uploads/{self.id}_{self.username}/")
+            self.storage_path = os.path.normpath(os.path.join(settings.BASE_FILE_STORAGE_PATH, f"uploads/{self.id}_{self.username}/"))
         os.makedirs(self.storage_path, exist_ok=True)
         super().save(*args, **kwargs)
 

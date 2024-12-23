@@ -1,4 +1,5 @@
 import os
+import platform
 
 DATABASE = {
     "ENGINE": "django.db.backends.postgresql",
@@ -9,12 +10,17 @@ DATABASE = {
     "PORT": os.getenv("DB_PORT", "5432"),
 }
 
-# BASE_FILE_STORAGE_PATH = os.getenv("FILE_STORAGE_PATH", "/etc/mycloud")
-BASE_FILE_STORAGE_PATH = os.getenv("FILE_STORAGE_PATH", "c:\\temp\\mycloud")
-os.makedirs(BASE_FILE_STORAGE_PATH, exist_ok=True)
+if platform.system() == "Windows":
+    default_storage_path = "c:\\temp\\mycloud"
+    default_log_file = "c:\\temp\\mycloud\\mycloud.log"
+else:
+    default_storage_path = "/etc/mycloud"
+    default_log_file = "/var/log/mycloud/mycloud.log"
 
-# LOG_FILE_PATH = os.getenv("LOG_FILE", "/var/log/mycloud/mycloud.log")
-LOG_FILE_PATH = os.getenv("LOG_FILE", "c:\\temp\\mycloud\\mycloud.log")
+BASE_FILE_STORAGE_PATH = os.path.normpath(os.getenv("FILE_STORAGE_PATH", default_storage_path))
+LOG_FILE_PATH = os.path.normpath(os.getenv("LOG_FILE", default_log_file))
+
+os.makedirs(BASE_FILE_STORAGE_PATH, exist_ok=True)
 os.makedirs(os.path.dirname(LOG_FILE_PATH), exist_ok=True)
 
 LOGGING = {
