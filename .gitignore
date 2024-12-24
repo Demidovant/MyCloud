@@ -167,3 +167,7 @@ cython_debug/
 *.pid
 
 backend/mycloud/media/uploads
+/backend/mycloud/mycloud/migrations/__init__.py
+/backend/mycloud/__init__.py
+/backend/__init__.py
+/frontend/node_modules

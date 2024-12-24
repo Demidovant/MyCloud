@@ -191,3 +191,16 @@ def logout(request):
     except (AttributeError, Token.DoesNotExist):
         pass
     return Response({"detail": "Logged out successfully"}, status=status.HTTP_200_OK)
+
+
+class UserProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        data = {
+            "username": user.username,
+            "is_admin": user.is_staff,
+            "email": user.email
+        }
+        return Response(data)
