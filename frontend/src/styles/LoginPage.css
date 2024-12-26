@@ -34,3 +34,36 @@
     background-color: #3cb371;
   }
   
+
+.error-container {
+    position: relative;
+    min-height: 20px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.error-container::before {
+    content: attr(data-placeholder);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    color: lightgray;
+    visibility: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.error-container[data-placeholder]:not(:has(p.error))::before {
+    visibility: visible;
+}
+
+.error {
+    color: red;
+    position: relative;
+    z-index: 1;
+    margin: 0;
+    padding: 0;
+}

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const Dashboard = () => {
+const AdminPage = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
@@ -62,7 +62,7 @@ const Dashboard = () => {
 
     return (
         <div className="container">
-            <h1>Добро пожаловать на панель управления пользователя</h1>
+            <h1>Добро пожаловать на панель управления администратора</h1>
             <p>Вы успешно вошли в систему. Здесь будет отображаться ваш контент.</p>
             <button onClick={() => {
                 localStorage.removeItem('authToken');
@@ -74,4 +74,4 @@ const Dashboard = () => {
     );
 };
 
-export default Dashboard;
+export default AdminPage;
