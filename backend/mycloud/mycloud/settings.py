@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 import os
+from datetime import timedelta
 from pathlib import Path
 from .config import DATABASE, BASE_FILE_STORAGE_PATH, LOGGING
 
@@ -144,6 +145,7 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ],
 }
+
 
 AUTH_USER_MODEL = 'mycloud.CustomUser'
 

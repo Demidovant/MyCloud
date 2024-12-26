@@ -1,4 +1,5 @@
 from django.core.exceptions import ObjectDoesNotExist
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.response import Response
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -197,6 +198,7 @@ class UserProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        """Получение атрибутов пользователя"""
         user = request.user
         data = {
             "username": user.username,
@@ -204,3 +206,12 @@ class UserProfileView(APIView):
             "email": user.email
         }
         return Response(data)
+
+
+class TokenVerifyView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        """Проверка валидности токена"""
+        return Response({"detail": "Token is valid"}, status=status.HTTP_200_OK)
