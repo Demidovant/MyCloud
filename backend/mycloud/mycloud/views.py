@@ -53,6 +53,8 @@ class FileViewSet(viewsets.ModelViewSet):
         """Удаление файла"""
         try:
             file = self.get_object()
+
+
             if file.user != request.user:
                 return Response({"detail": "Forbidden"}, status=status.HTTP_403_FORBIDDEN)
 
@@ -60,8 +62,6 @@ class FileViewSet(viewsets.ModelViewSet):
 
             if os.path.exists(file_path):
                 os.remove(file_path)
-            else:
-                return Response({"detail": "File not found"}, status=status.HTTP_404_NOT_FOUND)
 
             file.delete()
 
@@ -215,3 +215,39 @@ class TokenVerifyView(APIView):
     def post(self, request):
         """Проверка валидности токена"""
         return Response({"detail": "Token is valid"}, status=status.HTTP_200_OK)
+
+
+@action(detail=False, methods=['get'])
+def list_files(self, request):
+    """Получение списка файлов пользователя с подробной информацией."""
+    files = self.get_queryset()
+    if not files.exists():
+        return Response({"detail": "No files found"}, status=status.HTTP_200_OK)
+
+    data = [
+        {
+            "id": file.id,
+            "name": file.name,
+            "size": file.file.size,
+            "uploaded_at": file.uploaded_at,
+            "last_modified": file.file.storage.get_modified_time(file.file.name),
+            "comment": file.comment,
+        }
+        for file in files
+    ]
+
+    return Response(data, status=status.HTTP_200_OK)
+
+@action(detail=False, methods=['get'])
+def summary(self, request):
+    """Получение сводки по файлам пользователя."""
+    files = self.get_queryset()
+    total_files = files.count()
+    total_size = sum(file.file.size for file in files)
+
+    summary_data = {
+        "total_files": total_files,
+        "total_size": total_size,
+    }
+
+    return Response(summary_data, status=status.HTTP_200_OK)

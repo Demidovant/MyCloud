@@ -39,6 +39,7 @@ class File(models.Model):
     uploaded_at = models.DateTimeField(auto_now_add=True)
     comment = models.TextField(blank=True, null=True)
     size = models.PositiveIntegerField(null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
         """При сохранении файла вычисляем его размер"""

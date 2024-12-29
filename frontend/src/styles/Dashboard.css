@@ -1,0 +1,28 @@
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    border: 2px solid #ddd;
+}
+
+th {
+    background-color: #f4f4f4;
+}
+
+button {
+    margin: 0 5px;
+}
+
+.logout {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    margin-top: 50px;
+}
+
+.calculateSummary {
+    margin-top: 50px;
+}
