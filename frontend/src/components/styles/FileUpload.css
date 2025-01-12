@@ -18,7 +18,7 @@
     cursor: pointer;
     background-color: #fff;
     transition: background-color 0.3s ease;
-    width: 500px;
+    width: 550px;
 }
 
 .file-drop-zone.dragging {
@@ -31,6 +31,13 @@
 
 .file-input {
     margin-top: 10px;
+    width: 360px;
+    margin-right: 10px;
+}
+
+.file-upload-button{
+    margin: 0px;
+    width: 200px;
 }
 
 .comment-button {

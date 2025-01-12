@@ -73,11 +73,13 @@ const Dashboard = () => {
 
     return (
         <div className="container">
-            <h1>Панель управления пользователя</h1>
             <div className="dashboard-content">
                 <UserInfo token={token} className="user-info" />
-                <FileUpload className="file-upload" />
-                <FileManagement token={token} className="file-management" />
+                <div>
+                <h1>Панель управления пользователя</h1>
+                    <FileUpload className="file-upload" />
+                    <FileManagement token={token} className="file-management" />
+                </div>
             </div>
         </div>
     );

@@ -71,7 +71,7 @@ const FileUpload = () => {
                 onDragLeave={() => setDragging(false)}
                 onDrop={handleFileDrop}
             >
-                {file ? <p>Файл: {file.name}</p> : <p>Перетащите файл сюда</p>}
+                {file ? <p><i className="fas fa-file-alt"></i> Файл: {file.name}</p> : <p><i className="fas fa-cloud-upload-alt"></i> Перетащите файл сюда</p>}
             </div>
 
             <div className="file-input-wrapper">
@@ -82,7 +82,7 @@ const FileUpload = () => {
                     onChange={handleFileSelect}
                 />
                 <button onClick={handleFileUpload} className="file-upload-button">
-                    Загрузить файл
+                    <i className="fas fa-upload"></i> Загрузить файл
                 </button>
             </div>
 

@@ -110,14 +110,20 @@ const UserInfo = ({ token }) => {
 
     return (
         <div className="user-info">
-            <h2>Информация о пользователе</h2>
+            <h2>
+                <i className="fas fa-user-circle"></i> Информация о пользователе
+            </h2>
             {error && <div className="error">{error}</div>}
-            <div>
-                <label>Логин:</label>
+            <div className="user-info-row">
+                <label>
+                    Логин:
+                </label>
                 <span>{user.username}</span>
             </div>
-            <div>
-                <label>Email:</label>
+            <div className="user-info-row">
+                <label>
+                    Email:
+                </label>
                 {isEditing ? (
                     <input
                         type="email"
@@ -128,8 +134,10 @@ const UserInfo = ({ token }) => {
                     <span>{user.email}</span>
                 )}
             </div>
-            <div>
-                <label>Имя:</label>
+            <div className="user-info-row">
+                <label>
+                    Имя:
+                </label>
                 {isEditing ? (
                     <input
                         type="text"
@@ -140,8 +148,10 @@ const UserInfo = ({ token }) => {
                     <span>{user.first_name}</span>
                 )}
             </div>
-            <div>
-                <label>Фамилия:</label>
+            <div className="user-info-row">
+                <label>
+                    Фамилия:
+                </label>
                 {isEditing ? (
                     <input
                         type="text"
@@ -152,17 +162,25 @@ const UserInfo = ({ token }) => {
                     <span>{user.last_name}</span>
                 )}
             </div>
-            <div>
-                <label>Роль:</label>
+            <div className="user-info-row">
+                <label>
+                    Роль:
+                </label>
                 <span>{user.is_superuser ? 'Администратор' : 'Пользователь'}</span>
             </div>
             {isEditing ? (
-                <button onClick={handleSave}>Сохранить изменения</button>
+                <button onClick={handleSave}>
+                    <i className="fas fa-save"></i> Сохранить изменения
+                </button>
             ) : (
-                <button onClick={() => setIsEditing(true)}>Редактировать</button>
+                <button onClick={() => setIsEditing(true)}>
+                    <i className="fas fa-edit"></i> Редактировать
+                </button>
             )}
             <div>
-                <h3>Сменить пароль</h3>
+                <h3>
+                    Сменить пароль
+                </h3>
                 <input
                     type="password"
                     placeholder="Новый пароль"
@@ -175,13 +193,16 @@ const UserInfo = ({ token }) => {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                 />
-                <button onClick={handleChangePassword}>Сменить пароль</button>
+                <button onClick={handleChangePassword}>
+                    <i className="fas fa-key"></i> Сменить пароль
+                </button>
             </div>
             <button className="logout-btn" onClick={handleLogout}>
-                Выйти
+                <i className="fas fa-sign-out-alt"></i> Выйти
             </button>
         </div>
     );
+    
 };
 
 export default UserInfo;

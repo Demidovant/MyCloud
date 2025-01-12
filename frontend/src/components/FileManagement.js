@@ -159,7 +159,7 @@ const FileManagement = () => {
                                             }
                                         }}
                                     >
-                                        Переименовать
+                                        <i className="fas fa-edit"></i> Переименовать
                                     </button>
                                 </td>
                                 <td>{formatSize(file.size)}</td>
@@ -191,7 +191,7 @@ const FileManagement = () => {
                                             }
                                         }}
                                     >
-                                        Редактировать комментарий
+                                        <i className="fas fa-comment-dots"></i> Редактировать комментарий
                                     </button>
                                 </td>
                                 <td>
@@ -221,7 +221,7 @@ const FileManagement = () => {
                                                 .catch(err => alert(err.message));
                                         }}
                                     >
-                                        Скачать
+                                        <i className="fas fa-download"></i> Скачать
                                     </button>
                                     <button
                                     className="delete-button"
@@ -245,7 +245,7 @@ const FileManagement = () => {
                                         }
                                     }}
                                     >
-                                    Удалить
+                                    <i className="fas fa-trash-alt"></i> Удалить
                                     </button>
 
                                 </td>
@@ -253,12 +253,12 @@ const FileManagement = () => {
                                     <button
                                         onClick={() => generateTempLink(file.id)}
                                     >
-                                        Получить временную ссылку
+                                        <i className="fas fa-link"></i> Получить временную ссылку
                                     </button>
 
                                     {tempLink[file.id] && (
                                         <div>
-                                            <p>Временная ссылка: <a href={tempLink[file.id]} target="_blank" rel="noopener noreferrer">{tempLink[file.id]}</a></p>
+                                            <p><i className="fas fa-external-link-alt"></i> Временная ссылка: <a href={tempLink[file.id]} target="_blank" rel="noopener noreferrer">{tempLink[file.id]}</a></p>
                                         </div>
                                     )}
                                 </td>
