@@ -29,18 +29,18 @@ class FileSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     full_name = serializers.SerializerMethodField()
-    first_name = serializers.CharField(max_length=30)
-    last_name = serializers.CharField(max_length=30)
+    first_name = serializers.CharField(max_length=30, required=False, allow_blank=True)
+    last_name = serializers.CharField(max_length=30, required=False, allow_blank=True)
 
     class Meta:
         model = CustomUser
-        fields = ['id', 'username', 'first_name', 'last_name', 'full_name', 'email', 'password', 'storage_path']
+        fields = ['id', 'username', 'first_name', 'last_name', 'full_name', 'email', 'password', 'storage_path', 'is_active', 'is_staff', 'is_superuser']
         extra_kwargs = {
             'password': {'write_only': True},
         }
 
     def get_full_name(self, obj):
-        return f"{obj.first_name} {obj.last_name}"
+        return obj.full_name
 
     def create(self, validated_data):
         user = CustomUser.objects.create_user(
@@ -55,3 +55,10 @@ class UserSerializer(serializers.ModelSerializer):
         user.save()
 
         return user
+
+    def update(self, instance, validated_data):
+        instance.first_name = validated_data.get('first_name', instance.first_name)
+        instance.last_name = validated_data.get('last_name', instance.last_name)
+        instance.email = validated_data.get('email', instance.email)
+        instance.save()
+        return instance

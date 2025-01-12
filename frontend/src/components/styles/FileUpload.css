@@ -1,14 +1,24 @@
-button {
-    margin: 0 5px;
+.file-drop-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+    margin-bottom: 20px;
 }
 
 .file-drop-zone {
     border: 2px dashed #ccc;
+    border-radius: 8px;
     padding: 20px;
     text-align: center;
     cursor: pointer;
     background-color: #fff;
     transition: background-color 0.3s ease;
+    width: 500px;
 }
 
 .file-drop-zone.dragging {

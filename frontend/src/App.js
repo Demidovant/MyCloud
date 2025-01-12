@@ -6,6 +6,9 @@ import LoginPage from './pages/LoginPage';
 import Dashboard from './pages/Dashboard';
 import AdminPage from './pages/AdminPage';
 import RegPage from './pages/RegPage';
+import UserManagement from './components/UserManagement';
+import UserFilesPage from './pages/UserFilesPage';
+
 
 const App = () => {
     return (
@@ -17,7 +20,9 @@ const App = () => {
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/admin" element={<AdminPage />} />
+                    <Route path="/admin/users" element={<UserManagement />} />
                     <Route path="/register" element={<RegPage />} />
+                    <Route path="/admin/userfiles/:id" element={<UserFilesPage />} />
                 </Routes>
             </main>
         </Router>

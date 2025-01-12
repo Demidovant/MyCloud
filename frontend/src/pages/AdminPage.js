@@ -1,8 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import '../styles/AdminPage.css';
+import FileUpload from '../components/FileUpload';
+import FileManagement from '../components/FileManagement';
+import UserInfo from '../components/UserInfo';
 
 const AdminPage = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(false);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
@@ -14,62 +19,77 @@ const AdminPage = () => {
             return;
         }
 
-        fetch('http://127.0.0.1:8000/api/token/verify/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Token ${token}`,
-            },
-            body: JSON.stringify({ token: token })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.detail === "Token is valid") {
-                setIsAuthenticated(true);
-                fetch('http://127.0.0.1:8000/api/users/profile/', {
+        const verifyToken = async () => {
+            try {
+                const verifyResponse = await fetch('http://127.0.0.1:8000/api/token/verify/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Token ${token}`,
+                    },
+                    body: JSON.stringify({ token }),
+                });
+
+                if (!verifyResponse.ok) {
+                    throw new Error('Invalid token');
+                }
+
+                const profileResponse = await fetch('http://127.0.0.1:8000/api/users/profile/', {
                     method: 'GET',
                     headers: {
                         'Authorization': `Token ${token}`,
                     },
-                })
-                .then(res => res.json())
-                .then(userData => {
-                    if (userData.is_admin) {
-                        navigate('/admin');
-                    } else {
-                        navigate('/dashboard');
-                    }
-                })
-            } else {
+                });
+
+                if (!profileResponse.ok) {
+                    throw new Error('Failed to fetch user profile');
+                }
+
+                const userData = await profileResponse.json();
+
+                setIsAuthenticated(true);
+
+                if (userData.is_superuser) {
+                    setIsAdmin(true);
+                } else {
+                    navigate('/');
+                }
+            } catch (error) {
                 navigate('/login');
+            } finally {
+                setLoading(false);
             }
-        })
-        .catch(() => {
-            navigate('/login');
-        })
-        .finally(() => {
-            setLoading(false);
-        });
+        };
+
+        verifyToken();
     }, [navigate]);
 
     if (loading) {
         return <div>Загрузка...</div>;
     }
 
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !isAdmin) {
         return null;
     }
 
+    const token = localStorage.getItem('authToken');
+
     return (
         <div className="container">
-            <h1>Добро пожаловать на панель управления администратора</h1>
-            <p>Вы успешно вошли в систему. Здесь будет отображаться ваш контент.</p>
-            <button onClick={() => {
-                localStorage.removeItem('authToken');
-                navigate('/login');
-            }}>
-                Выйти
+            <div className="admin-page-content">
+                <UserInfo token={token} className="user-info" />
+                <div>
+                <h1>Панель администратора</h1>
+            <button
+                className="go-to-users-button"
+                onClick={() => navigate('/admin/users')}
+            >
+                Перейти к администрированию пользователями
             </button>
+                <FileUpload className="file-upload" />
+                <FileManagement token={token} className="file-management" />
+                </div>
+            </div>
         </div>
     );
 };

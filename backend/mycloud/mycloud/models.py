@@ -16,9 +16,16 @@ def user_directory_path(instance, filename):
 class CustomUser(AbstractUser):
     """Модель кастомного пользователя."""
     storage_path = models.CharField(max_length=255, blank=True, editable=False)
+    first_name = models.CharField(max_length=50, blank=True, null=True)
+    last_name = models.CharField(max_length=50, blank=True, null=True)
 
     def save(self, *args, **kwargs):
         """Переопределение метода save для генерации storage_path с учетом BASE_FILE_STORAGE_PATH."""
+        if not self.first_name:
+            self.first_name = None
+        if not self.last_name:
+            self.last_name = None
+
         if not self.storage_path:
             super().save(*args, **kwargs)
             self.storage_path = os.path.normpath(os.path.join(settings.BASE_FILE_STORAGE_PATH, f"uploads/{self.id}_{self.username}/"))
@@ -28,7 +35,8 @@ class CustomUser(AbstractUser):
     @property
     def full_name(self):
         """Возвращает полное имя пользователя."""
-        return f"{self.first_name} {self.last_name}".strip()
+        full_name = f"{self.first_name or ''} {self.last_name or ''}".strip()
+        return full_name if full_name else None
 
 
 class File(models.Model):

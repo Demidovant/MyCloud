@@ -1,10 +1,11 @@
 import React, { useState, useRef } from 'react';
-import './FileUpload.css';
+import './styles/FileUpload.css';
 
-const FileUpload = ({ onFileUpload }) => {
+const FileUpload = () => {
     const [file, setFile] = useState(null);
     const [dragging, setDragging] = useState(false);
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+    const [errorMessage, setErrorMessage] = useState(null);
     const fileInputRef = useRef(null);
 
     const handleFileDrop = (e) => {
@@ -31,28 +32,36 @@ const FileUpload = ({ onFileUpload }) => {
                 },
                 body: formData,
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Не удалось загрузить файл');
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data) {
                     setShowSuccessMessage(true);
                     setFile(null);
                     fileInputRef.current.value = '';
-                    onFileUpload(data);
 
                     setTimeout(() => {
                         setShowSuccessMessage(false);
                     }, 2000);
-
+                    setTimeout(() => {
+                        window.location.reload();;
+                    }, 2000);
                 } else {
-                    alert('Не удалось загрузить файл');
+                    setErrorMessage('Не удалось загрузить файл');
                 }
             })
-            .catch(() => alert('Ошибка при загрузке файла'));
+            .catch((error) => {
+                setErrorMessage(error.message || 'Ошибка при загрузке файла');
+            });
         }
     };
 
     return (
-        <div>
+        <div className="file-drop-container">
             <div
                 className={`file-drop-zone ${dragging ? 'dragging' : ''}`}
                 onDragOver={(e) => {
@@ -65,16 +74,17 @@ const FileUpload = ({ onFileUpload }) => {
                 {file ? <p>Файл: {file.name}</p> : <p>Перетащите файл сюда</p>}
             </div>
 
-            <input
-                ref={fileInputRef}
-                type="file"
-                className="file-input"
-                onChange={handleFileSelect}
-            />
-
-            <button onClick={handleFileUpload} className="file-upload-button">
-                Загрузить файл
-            </button>
+            <div className="file-input-wrapper">
+                <input
+                    ref={fileInputRef}
+                    type="file"
+                    className="file-input"
+                    onChange={handleFileSelect}
+                />
+                <button onClick={handleFileUpload} className="file-upload-button">
+                    Загрузить файл
+                </button>
+            </div>
 
             {showSuccessMessage && (
                 <div className="success-popup">
@@ -82,6 +92,11 @@ const FileUpload = ({ onFileUpload }) => {
                 </div>
             )}
 
+            {errorMessage && (
+                <div className="error-popup">
+                    <p>{errorMessage}</p>
+                </div>
+            )}
         </div>
     );
 };
