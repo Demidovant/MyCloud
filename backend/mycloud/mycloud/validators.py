@@ -5,16 +5,17 @@ import re
 class PasswordComplexityValidator:
     def validate(self, password, user=None):
         if len(password) < 6:
-            raise ValidationError("Password must be at least 6 characters long.")
+            raise ValidationError("Длина пароля должна быть не менее 6 символов.")
         if not re.search(r'[A-Z]', password):
-            raise ValidationError("Password must contain at least one uppercase letter.")
+            raise ValidationError("Пароль должен содержать как минимум одну заглавную английскую букву.")
         if not re.search(r'\d', password):
-            raise ValidationError("Password must contain at least one digit.")
+            raise ValidationError("Пароль должен содержать как минимум одну цифру.")
         if not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
-            raise ValidationError("Password must contain at least one special character.")
+            raise ValidationError("Пароль должен содержать как минимум один специальный символ.")
 
     def get_help_text(self):
         return (
-            "Your password must contain at least 6 characters, including one uppercase letter, "
-            "one digit, and one special character."
+            "Ваш пароль должен содержать не менее 6 символов, "
+            "включая одну заглавную английскую букву, "
+            "одну цифру и один специальный символ."
         )

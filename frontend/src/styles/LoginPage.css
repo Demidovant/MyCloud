@@ -67,3 +67,12 @@
     margin: 0;
     padding: 0;
 }
+
+.login-field {
+  padding: 15px;
+  margin-bottom: 0px;
+}
+
+.password-field {
+  padding: 15px;
+}

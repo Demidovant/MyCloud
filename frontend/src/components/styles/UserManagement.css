@@ -6,6 +6,7 @@
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     margin: 20px 20px;
+    overflow-x: auto;
 }
 
 .user-management-container h1 {
@@ -86,4 +87,15 @@ table td button:last-child {
   .delete-button:hover {
     background-color: #c0392b;
   }
-  
+
+.toggle {
+  transition: font-size 0.2s ease-in-out;
+}
+
+.toggle:hover {
+  font-size: 28px;
+}
+
+.cancel-button:hover {
+    background-color: red;
+}

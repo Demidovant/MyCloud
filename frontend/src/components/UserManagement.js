@@ -1,13 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './styles/UserManagement.css';
+import ChangePassword from './ChangePassword';
 
 const UserManagement = () => {
     const [users, setUsers] = useState([]);
-    const [filesData, setFilesData] = useState({});
     const [isAdmin, setIsAdmin] = useState(false);
+    const [filesData, setFilesData] = useState({});
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
+    const [updatingUserId, setUpdatingUserId] = useState(null);
+    const [passwordModal, setPasswordModal] = useState({ visible: false, userId: null });
+
+    const openPasswordModal = (userId) => {
+        setPasswordModal({ visible: true, userId });
+    };
+    
+    const closePasswordModal = () => {
+        setPasswordModal({ visible: false, userId: null });
+    };
+    
 
     const fetchUsers = async (token) => {
         try {
@@ -58,6 +70,13 @@ const UserManagement = () => {
 
     const handleDeleteUser = async (userId) => {
         const token = localStorage.getItem('authToken');
+    
+        const isConfirmed = window.confirm('Вы действительно хотите удалить пользователя?');
+        
+        if (!isConfirmed) {
+            return;
+        }
+    
         try {
             const response = await fetch(`http://127.0.0.1:8000/api/users/${userId}/`, {
                 method: 'DELETE',
@@ -65,7 +84,7 @@ const UserManagement = () => {
                     'Authorization': `Token ${token}`,
                 },
             });
-
+    
             if (response.ok) {
                 setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
                 alert('Пользователь удален');
@@ -74,6 +93,47 @@ const UserManagement = () => {
             }
         } catch (error) {
             console.error('Ошибка при удалении пользователя:', error);
+        }
+    };
+    
+
+    const handleEditUser = (userId, userData) => {
+        setOriginalUserData(userData);
+        setUpdatingUserId(userId);
+    };
+
+    const handleCancelEdit = () => {
+        setUpdatingUserId(null);
+        setOriginalUserData({});
+        const token = localStorage.getItem('authToken');
+        fetchUsers(token);
+    };
+
+    const handleSaveUser = async (userId, updatedData) => {
+        const token = localStorage.getItem('authToken');
+        try {
+            const response = await fetch(`http://127.0.0.1:8000/api/users/${userId}/update/`, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `Token ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(updatedData),
+            });
+
+            if (response.ok) {
+                const updatedUser = await response.json();
+                setUsers(prevUsers =>
+                    prevUsers.map(user =>
+                        user.id === updatedUser.id ? updatedUser : user
+                    )
+                );
+                setUpdatingUserId(null);
+            } else {
+                alert('Ошибка при сохранении данных пользователя');
+            }
+        } catch (error) {
+            console.error('Ошибка при сохранении данных пользователя:', error);
         }
     };
 
@@ -117,9 +177,50 @@ const UserManagement = () => {
 
     const sortedUsers = users.sort((a, b) => a.id - b.id);
 
+    const handleToggleAttribute = async (userId, attribute) => {
+        const token = localStorage.getItem('authToken');
+        
+        if (attribute === 'is_active' || attribute === 'is_staff' || attribute === 'is_superuser') {
+            setUpdatingUserId(null);
+        } else {
+            setUpdatingUserId(userId);
+        }
+    
+        try {
+            const response = await fetch(`http://127.0.0.1:8000/api/users/${userId}/update_attributes/`, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `Token ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    [attribute]: !users.find(user => user.id === userId)[attribute],
+                }),
+            });
+    
+            if (response.ok) {
+                const updatedUser = await response.json();
+                setUsers(prevUsers =>
+                    prevUsers.map(user =>
+                        user.id === updatedUser.id ? updatedUser : user
+                    )
+                );
+            } else {
+                alert('Ошибка при обновлении атрибута пользователя');
+            }
+        } catch (error) {
+            console.error('Ошибка при обновлении атрибута пользователя:', error);
+        } finally {
+            setUpdatingUserId(null);
+        }
+    };
+    
+
     if (loading) {
         return <div>Загрузка...</div>;
     }
+
+
 
     return (
         <div className="user-management-container">
@@ -143,58 +244,125 @@ const UserManagement = () => {
                         <th>Active status</th>
                         <th>Staff status</th>
                         <th>Superuser status</th>
+                        <th>Редактировать</th>
                         <th>Удалить пользователя</th>
+                        <th>Смена пароля</th>
                     </tr>
                 </thead>
                 <tbody>
                     {sortedUsers.map(user => {
                         const userFiles = filesData[user.id] || { fileCount: 0, totalFileSize: 0 };
+                        const isEditing = user.id === updatingUserId;
+
                         return (
                             <tr key={user.id}>
                                 <td>{user.id}</td>
                                 <td>{user.username}</td>
-                                <td>{user.email}</td>
-                                <td>{user.first_name || '-'}</td>
-                                <td>{user.last_name || '-'}</td>
+                                <td>
+                                    {isEditing ? (
+                                        <input
+                                            type="email"
+                                            defaultValue={user.email}
+                                            onChange={(e) => user.email = e.target.value}
+                                        />
+                                    ) : (
+                                        user.email
+                                    )}
+                                </td>
+                                <td>
+                                    {isEditing ? (
+                                        <input
+                                            type="text"
+                                            defaultValue={user.first_name || ''}
+                                            onChange={(e) => user.first_name = e.target.value}
+                                        />
+                                    ) : (
+                                        user.first_name || '-'
+                                    )}
+                                </td>
+                                <td>
+                                    {isEditing ? (
+                                        <input
+                                            type="text"
+                                            defaultValue={user.last_name || ''}
+                                            onChange={(e) => user.last_name = e.target.value}
+                                        />
+                                    ) : (
+                                        user.last_name || '-'
+                                    )}
+                                </td>
                                 <td>{user.full_name || '-'}</td>
                                 <td>{user.storage_path || '-'}</td>
                                 <td>{userFiles.fileCount}</td>
                                 <td>{formatSize(userFiles.totalFileSize)}</td>
-                                <td><button onClick={() => navigate(`/admin/userfiles/${user.id}`)}>Управление файлами пользователя</button></td>
-                                <td>{user.is_active ? 'True' : 'False'}</td>
-                                <td>{user.is_staff ? 'True' : 'False'}</td>
-                                <td>{user.is_superuser ? 'True' : 'False'}</td>
+                                <td><button onClick={() => navigate(`/admin/userfiles/${user.id}`)}> <i className="fas fa-folder-open"></i> Управление файлами пользователя</button></td>
+                                <td className="toggle"
+                                    onClick={() => handleToggleAttribute(user.id, 'is_active')}
+                                    style={{ cursor: 'pointer' }}
+                                >
+                                    <i className={user.is_active ? 'fas fa-check text-success' : 'fas fa-times text-danger'}></i>
+                                </td>
+                                <td className="toggle"
+                                    onClick={() => handleToggleAttribute(user.id, 'is_staff')}
+                                    style={{ cursor: 'pointer' }}
+                                >
+                                    <i className={user.is_staff ? 'fas fa-check text-success' : 'fas fa-times text-danger'}></i>
+                                </td>
+                                <td className="toggle"
+                                    onClick={() => handleToggleAttribute(user.id, 'is_superuser')}
+                                    style={{ cursor: 'pointer' }}
+                                >
+                                    <i className={user.is_superuser ? 'fas fa-check text-success' : 'fas fa-times text-danger'}></i>
+                                </td>
                                 <td>
-                                    <button
-                                        className="delete-button"
-                                        onClick={() => {
-                                        if (window.confirm(`Вы уверены, что хотите удалить пользователя?`)) {
-                                            fetch(`http://127.0.0.1:8000/api/users/${user.id}/`, {
-                                            method: 'DELETE',
-                                            headers: {
-                                                'Authorization': `Token ${localStorage.getItem('authToken')}`,
-                                            },
-                                            })
-                                            .then(response => {
-                                            if (response.ok) {
-                                                alert('Пользователь успешно удалён');
-                                                setUsers(users.filter(u => u.id !== user.id)); 
-                                            } else {
-                                                alert('Ошибка при удалении пользователя');
-                                            }
-                                            })
-                                            .catch(err => alert('Ошибка при запросе удаления пользователя'));
-                                        }
-                                        }}
+                                    {isEditing ? (
+                                        <>
+                                            <button onClick={() => handleSaveUser(user.id, {
+                                                first_name: user.first_name,
+                                                last_name: user.last_name,
+                                                email: user.email,
+                                            })}>
+                                                Сохранить
+                                            </button>
+                                            <button onClick={handleCancelEdit}>
+                                                Отмена
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <button onClick={() => handleEditUser(user.id, user)}>
+                                            <i className="fas fa-edit"></i>Редактировать
+                                        </button>
+                                    )}
+                                </td>
+                                <td>
+                                <button
+                                    className="delete-button"
+                                        onClick={() => handleDeleteUser(user.id)}
                                     >
-                                        Удалить пользователя
+                                        <i className="fas fa-trash-alt"></i> Удалить пользователя
                                     </button>
                                 </td>
+                                <td>
+                                <button onClick={() => openPasswordModal(user.id)}>
+                                    <i className="fas fa-key"></i> Сменить пароль
+                                </button>
+                            </td>
                             </tr>
                         );
                     })}
                 </tbody>
             </table>
+            {passwordModal.visible && (
+                <div className="modal">
+                    <div className="modal-content">
+                        <ChangePassword
+                            token={localStorage.getItem('authToken')}
+                            userId={passwordModal.userId}
+                            onClose={closePasswordModal}
+                        />
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

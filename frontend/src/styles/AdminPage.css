@@ -6,33 +6,27 @@
 
 .admin-page-content {
     display: grid;
-    grid-template-columns: 1fr 5fr; /* Левая колонка занимает 1 часть, правая 2 части */
-    grid-template-rows: auto auto; /* Две строки: верхняя для загрузки файла, нижняя для управления */
-    gap: 10px; /* Расстояние между элементами */
-    align-items: start; /* Выравниваем элементы по верху */
+    grid-template-columns: 1fr 5fr;
+    grid-template-rows: auto auto;
+    gap: 10px;
+    align-items: start;
 }
 
-/* UserInfo занимает всю левую колонку */
 .admin-page-content > .user-info {
-    grid-column: 1; /* Левая колонка */
-    grid-row: 1 / span 2; /* Занимает две строки */
-    max-width: 300px; /* Можно ограничить ширину */
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    max-width: 300px;
 }
 
-/* FileUpload располагается в правой верхней ячейке */
 .admin-page-content > .file-upload {
     grid-column: 2; /* Правая колонка */
     grid-row: 1; /* Верхняя строка */
 }
 
-/* FileManagement располагается в правой нижней ячейке */
 .admin-page-content > .file-management {
     grid-column: 2; /* Правая колонка */
     grid-row: 2; /* Нижняя строка */
 }
-
-
-/* styles для кнопки в AdminPage */
 
 .go-to-users-button {
     background-color: #007bff;
@@ -43,6 +37,7 @@
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.2s ease;
+    animation: go-to-users-button-animation 3s ease-out;
 }
 
 .go-to-users-button:hover {
@@ -52,4 +47,22 @@
 
 .go-to-users-button:active {
     transform: translateY(2px);
+}
+
+
+@keyframes go-to-users-button-animation {
+    0% {
+        box-shadow: 0 0 10px 5px rgba(249, 168, 37, 0.5);
+        border-color: #f9a825;
+        
+    }
+    50% {
+        box-shadow: 0 0 35px 30px rgba(249, 168, 37, 0.3);
+        padding-left: 100px;
+        padding-right: 100px;
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+        border-color: #ccc;
+    }
 }

@@ -1,15 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import ChangePassword from './ChangePassword';
 import './styles/UserInfo.css';
 
 const UserInfo = ({ token }) => {
     const [user, setUser] = useState({});
+    const [originalUser, setOriginalUser] = useState({});
     const [isEditing, setIsEditing] = useState(false);
-    const [newPassword, setNewPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
+    const [passwordModal, setPasswordModal] = useState({ visible: false, userId: null });
+
+    const openPasswordModal = (userId) => {
+        setPasswordModal({ visible: true, userId: userId });
+    };
+
+    const closePasswordModal = () => {
+        setPasswordModal({ visible: false, userId: null });
+    };
 
     useEffect(() => {
         setIsLoading(true);
@@ -22,6 +31,7 @@ const UserInfo = ({ token }) => {
             .then(response => response.json())
             .then(data => {
                 setUser(data);
+                setOriginalUser(data);
                 setIsLoading(false);
             })
             .catch(error => {
@@ -46,6 +56,7 @@ const UserInfo = ({ token }) => {
             .then(response => {
                 if (response.ok) {
                     setIsEditing(false);
+                    setOriginalUser(user);
                 } else {
                     setError('Ошибка обновления данных пользователя');
                 }
@@ -53,50 +64,9 @@ const UserInfo = ({ token }) => {
             .catch(() => setError('Ошибка при сохранении данных'));
     };
 
-    const handleChangePassword = () => {
-        if (newPassword !== confirmPassword) {
-            alert('Пароли не совпадают');
-            return;
-        }
-    
-        if (newPassword.length < 6) {
-            alert('Пароль должен содержать хотя бы 6 символов');
-            return;
-        }
-        if (!/[A-Z]/.test(newPassword)) {
-            alert('Пароль должен содержать хотя бы одну заглавную букву');
-            return;
-        }
-        if (!/\d/.test(newPassword)) {
-            alert('Пароль должен содержать хотя бы одну цифру');
-            return;
-        }
-        if (!/[!@#$%^&*(),.?":{}|<>]/.test(newPassword)) {
-            alert('Пароль должен содержать хотя бы один специальный символ');
-            return;
-        }
-    
-        fetch('http://127.0.0.1:8000/api/users/change_password/', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Token ${token}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                new_password: newPassword,
-                confirm_password: confirmPassword,
-            }),
-        })
-            .then(response => {
-                if (response.ok) {
-                    alert('Пароль успешно изменён');
-                    setNewPassword('');
-                    setConfirmPassword('');
-                } else {
-                    response.json().then(data => alert(data.detail || 'Ошибка изменения пароля'));
-                }
-            })
-            .catch(() => alert('Ошибка при смене пароля'));
+    const handleCancelEdit = () => {
+        setUser(originalUser);
+        setIsEditing(false);
     };
 
     const handleLogout = () => {
@@ -126,6 +96,7 @@ const UserInfo = ({ token }) => {
                 </label>
                 {isEditing ? (
                     <input
+                        className="highlight-row"
                         type="email"
                         value={user.email || ''}
                         onChange={(e) => setUser({ ...user, email: e.target.value })}
@@ -140,6 +111,7 @@ const UserInfo = ({ token }) => {
                 </label>
                 {isEditing ? (
                     <input
+                        className="highlight-row"
                         type="text"
                         value={user.first_name || ''}
                         onChange={(e) => setUser({ ...user, first_name: e.target.value })}
@@ -154,6 +126,7 @@ const UserInfo = ({ token }) => {
                 </label>
                 {isEditing ? (
                     <input
+                        className="highlight-row"
                         type="text"
                         value={user.last_name || ''}
                         onChange={(e) => setUser({ ...user, last_name: e.target.value })}
@@ -169,40 +142,42 @@ const UserInfo = ({ token }) => {
                 <span>{user.is_superuser ? 'Администратор' : 'Пользователь'}</span>
             </div>
             {isEditing ? (
-                <button onClick={handleSave}>
-                    <i className="fas fa-save"></i> Сохранить изменения
-                </button>
+                <>
+                    <button className="save-button" onClick={handleSave}>
+                        <i className="fas fa-save"></i> Сохранить изменения
+                    </button>
+                    <button className="cancel-button" onClick={handleCancelEdit}>
+                        <i className="fas fa-times"></i> Отмена
+                    </button>
+                </>
             ) : (
                 <button onClick={() => setIsEditing(true)}>
                     <i className="fas fa-edit"></i> Редактировать
                 </button>
             )}
             <div>
-                <h3>
-                    Сменить пароль
-                </h3>
-                <input
-                    type="password"
-                    placeholder="Новый пароль"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                />
-                <input
-                    type="password"
-                    placeholder="Подтвердите новый пароль"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                />
-                <button onClick={handleChangePassword}>
+                <button onClick={() => openPasswordModal(user.id)}>
                     <i className="fas fa-key"></i> Сменить пароль
                 </button>
             </div>
+
+            {passwordModal.visible && (
+                <div className="modal">
+                    <div className="modal-content">
+                        <ChangePassword
+                            token={localStorage.getItem('authToken')}
+                            userId={passwordModal.userId}
+                            onClose={closePasswordModal}
+                        />
+                    </div>
+                </div>
+            )}
+
             <button className="logout-btn" onClick={handleLogout}>
                 <i className="fas fa-sign-out-alt"></i> Выйти
             </button>
         </div>
     );
-    
 };
 
 export default UserInfo;

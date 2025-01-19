@@ -98,12 +98,14 @@ const LoginPage = () => {
             <h1>Вход в систему</h1>
             <form onSubmit={handleSubmit}>
                 <input
+                    className='login-field'
                     type="text"
                     placeholder="Логин"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                 />
                 <input
+                    className='password-field'
                     type="password"
                     placeholder="Пароль"
                     value={password}

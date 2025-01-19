@@ -1,3 +1,4 @@
+from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.response import Response
@@ -15,7 +16,6 @@ from .models import File, TemporaryLink, CustomUser
 from .serializers import FileSerializer, UserSerializer
 import secrets
 import os
-from .validators import PasswordComplexityValidator
 from urllib.parse import quote
 
 
@@ -30,10 +30,10 @@ class FileViewSet(viewsets.ModelViewSet):
         user = self.request.user
         user_id = self.request.query_params.get('user_id', None)
 
-        if user.is_staff and user_id:
+        if (user.is_staff or user.is_superuser) and user_id:
             return File.objects.filter(user_id=user_id)
 
-        if user.is_staff:
+        if (user.is_staff or user.is_superuser):
             return File.objects.all()
 
         return File.objects.filter(user=user)
@@ -276,28 +276,77 @@ def update_user_profile(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def update_user_by_id(request, user_id):
+    """Редактирование данных профиля пользователя (имя, фамилия, email)"""
+    try:
+        user = CustomUser.objects.get(id=user_id)
+    except CustomUser.DoesNotExist:
+        return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    if 'first_name' in request.data:
+        user.first_name = request.data['first_name']
+    if 'last_name' in request.data:
+        user.last_name = request.data['last_name']
+    if 'email' in request.data:
+        user.email = request.data['email']
+
+    user.save()
+    serializer = UserSerializer(user)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def change_password(request):
-    """Изменение пароля пользователя без старого пароля"""
-    user = request.user
+def change_password(request, user_id):
+    """Изменение пароля пользователя по ID"""
+    if user_id:
+        if not request.user.is_superuser and request.user.id != user_id:
+            return Response({"detail": "Доступ запрещён"}, status=status.HTTP_403_FORBIDDEN)
+        try:
+            user = CustomUser.objects.get(id=user_id)
+        except CustomUser.DoesNotExist:
+            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+    else:
+        user = request.user
+
     new_password = request.data.get('new_password')
     confirm_password = request.data.get('confirm_password')
 
-    # Проверка на совпадение пароля и его подтверждения
     if new_password != confirm_password:
         return Response({"detail": "Пароли не совпадают"}, status=status.HTTP_400_BAD_REQUEST)
 
-    # Проверка сложности пароля
-    password_validator = PasswordComplexityValidator()
     try:
-        password_validator.validate(new_password)
+        validate_password(new_password)
     except ValidationError as e:
         return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-    # Установка нового пароля
     user.set_password(new_password)
     user.save()
 
     return Response({"detail": "Пароль успешно изменён"}, status=status.HTTP_200_OK)
 
+
+
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def update_user_attributes(request, user_id):
+    """Редактирование атрибутов пользователя (is_active, is_staff, is_superuser)"""
+    if not (request.user.is_staff or request.user.is_superuser):
+        return Response({"detail": "Forbidden"}, status=status.HTTP_403_FORBIDDEN)
+
+    try:
+        user = CustomUser.objects.get(id=user_id)
+    except CustomUser.DoesNotExist:
+        return Response({"detail": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    allowed_fields = ['is_active', 'is_staff', 'is_superuser']
+    data = {key: value for key, value in request.data.items() if key in allowed_fields}
+
+    for field, value in data.items():
+        setattr(user, field, value)
+
+    user.save()
+
+    return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
