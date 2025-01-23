@@ -1,88 +1,93 @@
-.file-management-container {
-    max-width: 100%;
-    padding: 5px 20px;
-    background-color: #f9f9f9;
-    border: 1px solid #ddd;
+.toggle-view-button {
+    position: absolute;
+    top: 120px;
+    right: 50px;
+    padding: 10px 11px;
+    background-color: rgb(83, 236, 225);
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    z-index: 1000;
+    font-size: 25px;
+}
+
+.toggle-view-button:hover {
+    background-color: #2ec4d2;
+}
+
+.grid-view {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.file-card {
+    background-color: #fff;
+    padding: 10px;
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     text-align: center;
 }
 
-.file-management-container h1 {
-    font-size: 1.5rem;
-    color: #333;
+.file-icon {
     margin-bottom: 10px;
-    text-align: center;
 }
 
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 10px;
-    background-color: #fff;
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-table thead tr {
-    background-color: #e8f5e9;
-    color: #388e3c;
-    text-align: center;
-    font-weight: bold;
-    font-size: 0.9rem;
-}
-
-table th,
-table td {
-    padding: 5px 8px;
-    border: 1px solid #ddd;
-    text-align: center;
+.file-name {
     font-size: 0.85rem;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    margin-bottom: 10px;
 }
 
-table tbody tr:nth-child(odd) {
-    background-color: #f2f2f2;
-}
-
-table tbody tr:hover {
-    background-color: #eaf4ff;
-}
-
-table td button {
+.file-actions button {
     background-color: #4caf50;
     color: white;
     border: none;
     border-radius: 4px;
-    padding: 5px 8px;
-    font-size: 0.8rem;
+    padding: 5px;
+    margin-right: 5px;
     cursor: pointer;
-    margin-right: 3px;
-    transition: background-color 0.3s ease;
 }
 
-table td button:hover {
+.file-actions button:hover {
     background-color: #388e3c;
 }
 
-table td button:active {
+.file-actions button:active {
     background-color: #2e7d32;
 }
 
-table td button:last-child {
-    margin-right: 0;
+.file-management-container {
+    margin-left: 15px;
 }
 
-.no-files-message {
+.download-button, .view-button, .generate-link-button {
+    font-size: 25px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: none;
+    cursor: pointer;
+
+}
+
+.file-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.file-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.file-management-container .file-stats {
     text-align: center;
-    color: #666;
-    font-size: 0.9rem;
-    padding: 20px 0;
 }
-
-.delete-button {
-    background-color: #e74c3c;
-  }
-  
-  .delete-button:hover {
-    background-color: #c0392b;
-  }

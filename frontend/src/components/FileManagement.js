@@ -8,6 +8,7 @@ const FileManagement = () => {
     const [files, setFiles] = useState([]);
     const [fileStats, setFileStats] = useState({ fileCount: 0, totalFileSize: 0 });
     const [userId, setUserId] = useState(null);
+    const [isGridView, setIsGridView] = useState(false);
 
     // Функция для получения данных пользователя
     const fetchUserProfile = async () => {
@@ -71,6 +72,11 @@ const FileManagement = () => {
 
     // Получаем данные о пользователе при монтировании компонента
     useEffect(() => {
+        const savedView = localStorage.getItem('viewMode');
+        if (savedView) {
+            setIsGridView(savedView === 'grid');
+        }
+
         if (urlUserId) {
             setUserId(urlUserId);
             fetchFiles(urlUserId);  // Загружаем файлы для пользователя, если id передано в URL
@@ -79,6 +85,18 @@ const FileManagement = () => {
         }
     }, [urlUserId]);
 
+
+    // Функция для обрезания имени файла до 30 символов
+    const truncateFileName = (name) => {
+        return name.length > 30 ? name.slice(0, 30) + '...' : name;
+    };
+
+    const toggleView = () => {
+        const newViewMode = !isGridView;
+        setIsGridView(newViewMode);
+        localStorage.setItem('viewMode', newViewMode ? 'grid' : 'table');
+    };
+
     return (
         <div className="file-management-container">
             <div className="file-stats">
@@ -86,6 +104,12 @@ const FileManagement = () => {
                 <p>Общий объем файлов: {formatSize(fileStats.totalFileSize)}</p>
             </div>
 
+            <button className="toggle-view-button" onClick={toggleView}>
+                {isGridView ? <i className="fas fa-th"></i> : <i className="fas fa-table"></i>}
+            </button>
+
+            {/* Отображение файлов в табличном виде */}
+            {!isGridView ? (
             <table>
                 <thead>
                     <tr>
@@ -261,6 +285,81 @@ const FileManagement = () => {
                         ))}
                 </tbody>
             </table>
+            ) : (
+                /* Отображение файлов в плиточном виде */
+                <div className="grid-view">
+                    {files.map((file) => (
+                        <div className="file-card" key={file.id}>
+                            <div className="file-name">{truncateFileName(file.name)}</div>
+                            <div className="file-actions">
+                                <button className="view-button"
+                                    onClick={() => {
+                                        fetch(`http://127.0.0.1:8000/api/files/${file.id}/download/`, {
+                                            method: 'GET',
+                                            headers: {
+                                                'Authorization': `Token ${localStorage.getItem('authToken')}`,
+                                            },
+                                        })
+                                        .then(response => {
+                                            if (response.ok) {
+                                                const contentType = response.headers.get('Content-Type');
+                                                if (contentType && (contentType.includes('pdf') || contentType.includes('image') || contentType.includes('text'))) {
+                                                    return response.blob();
+                                                } else {
+                                                    throw new Error('Невозможно отобразить этот файл в браузере');
+                                                }
+                                            } else {
+                                                throw new Error('Ошибка при получении файла');
+                                            }
+                                        })
+                                        .then(blob => {
+                                            const url = window.URL.createObjectURL(blob);
+                                            const newWindow = window.open(url, '_blank');
+                                            if (!newWindow) {
+                                                alert('Не удалось открыть файл в новой вкладке');
+                                            }
+                                        })
+                                        .catch(err => alert(err.message));
+                                    }}
+                                >
+                                    <i className="fas fa-eye"></i>
+                                </button>
+                           
+                                <button className="download-button"
+                                    onClick={() => {
+                                        fetch(`http://127.0.0.1:8000/api/files/${file.id}/download/`, {
+                                            method: 'GET',
+                                            headers: {
+                                                'Authorization': `Token ${localStorage.getItem('authToken')}`,
+                                            },
+                                        })
+                                        .then(response => {
+                                            if (response.ok) {
+                                                return response.blob();
+                                            } else {
+                                                throw new Error('Ошибка при скачивании файла');
+                                            }
+                                        })
+                                        .then(blob => {
+                                            const link = document.createElement('a');
+                                            const url = window.URL.createObjectURL(blob);
+                                            link.href = url;
+                                            link.download = file.name;
+                                            link.click();
+                                            window.URL.revokeObjectURL(url);
+                                        })
+                                        .catch(err => alert(err.message));
+                                    }}
+                                >
+                                    <i className="fas fa-download"></i>
+                                </button>
+                                <GenerateTempLink fileId={file.id} className="generate-link-button" />
+                            </div>
+                            {formatSize(file.size)}
+                        </div>
+                    ))}
+                </div>
+            )}
 
             {files.length === 0 && <p className="no-files-message">Нет загруженных файлов</p>}
 

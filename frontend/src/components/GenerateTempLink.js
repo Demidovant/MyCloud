@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import './styles/GenerateTempLink.css';
 
-const GenerateTempLink = ({ fileId }) => {
+const GenerateTempLink = ({ fileId, className }) => {
     const [tempLink, setTempLink] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const [modalVisible, setModalVisible] = useState(false); // Для управления видимостью модалки
+    const [modalVisible, setModalVisible] = useState(false);
 
     const generateTempLink = async () => {
         setIsLoading(true);
@@ -21,7 +21,7 @@ const GenerateTempLink = ({ fileId }) => {
             if (response.ok) {
                 const data = await response.json();
                 setTempLink(data.link);
-                setModalVisible(true); // Открыть модалку
+                setModalVisible(true);
             } else {
                 alert('Ошибка при генерации ссылки');
             }
@@ -33,15 +33,15 @@ const GenerateTempLink = ({ fileId }) => {
     };
 
     const handleCloseModal = () => {
-        setModalVisible(false); // Закрыть модалку
+        setModalVisible(false);
     };
 
     return (
         <div>
-            <button onClick={generateTempLink} disabled={isLoading}>
-                {isLoading ? 'Генерация...' : 'Получить временную ссылку'}
-            </button>
-
+        <button className={className} onClick={generateTempLink} disabled={isLoading}>
+            {isLoading ?  <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-link"></i>}
+        </button>
+        
             {modalVisible && (
                 <div className="modal">
                     <div className="modal-content">
