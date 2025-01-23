@@ -1,5 +1,6 @@
 .user-info {
     max-width: 350px;
+    height: calc(100vh - 150px);
     padding: 20px;
     padding-bottom: 10px;
     border: 1px solid #ddd;
@@ -7,6 +8,9 @@
     background-color: #f9f9f9;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .user-info h2 {
@@ -64,9 +68,9 @@
 
 .user-info .logout-btn {
     background-color: #dc3545;
-    margin-top: 20px;
-    width: 70%;
     text-align: center;
+    margin-top: auto;
+    margin-bottom: 20px;
 }
 
 .user-info .logout-btn:hover {

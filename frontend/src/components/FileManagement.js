@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import './styles/FileManagement.css';
+import GenerateTempLink from './GenerateTempLink';
 
 const FileManagement = () => {
     const { id: urlUserId } = useParams();
     const [files, setFiles] = useState([]);
     const [fileStats, setFileStats] = useState({ fileCount: 0, totalFileSize: 0 });
     const [userId, setUserId] = useState(null);
-    const [tempLink, setTempLink] = useState({});
 
     // Функция для получения данных пользователя
     const fetchUserProfile = async () => {
@@ -78,33 +78,6 @@ const FileManagement = () => {
             fetchUserProfile();  // Иначе получаем текущего пользователя
         }
     }, [urlUserId]);
-
-
-    // Функция для генерации временной ссылки
-    const generateTempLink = async (fileId) => {
-        const token = localStorage.getItem('authToken');
-        try {
-            const response = await fetch(`http://127.0.0.1:8000/api/files/${fileId}/generate_link/`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Token ${token}`,
-                    'Content-Type': 'application/json',
-                },
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                setTempLink((prevState) => ({
-                    ...prevState,
-                    [fileId]: data.link,
-                }));
-            } else {
-                alert('Ошибка при генерации ссылки');
-            }
-        } catch (error) {
-            console.error('Ошибка при генерации ссылки:', error);
-        }
-    };
 
     return (
         <div className="file-management-container">
@@ -282,17 +255,7 @@ const FileManagement = () => {
 
                                 </td>
                                 <td>
-                                    <button
-                                        onClick={() => generateTempLink(file.id)}
-                                    >
-                                        <i className="fas fa-link"></i> Получить временную ссылку
-                                    </button>
-
-                                    {tempLink[file.id] && (
-                                        <div>
-                                            <p><i className="fas fa-external-link-alt"></i> Временная ссылка: <a href={tempLink[file.id]} target="_blank" rel="noopener noreferrer">{tempLink[file.id]}</a></p>
-                                        </div>
-                                    )}
+                                <GenerateTempLink fileId={file.id} />
                                 </td>
                             </tr>
                         ))}
@@ -300,6 +263,7 @@ const FileManagement = () => {
             </table>
 
             {files.length === 0 && <p className="no-files-message">Нет загруженных файлов</p>}
+
         </div>
     );
 };
