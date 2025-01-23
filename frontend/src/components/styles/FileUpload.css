@@ -1,13 +1,9 @@
 .file-drop-container {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
-    width: 100%;
     flex-direction: column;
     align-items: center;
+    width: 100%;
     margin-top: 20px;
-    margin-bottom: 20px;
 }
 
 .file-drop-zone {
@@ -18,7 +14,9 @@
     cursor: pointer;
     background-color: #fff;
     transition: background-color 0.3s ease;
-    width: 550px;
+    width: 100%;
+    max-width: 550px;
+    margin-bottom: 10px;
 }
 
 .file-drop-zone.dragging {
@@ -27,21 +25,53 @@
 
 .file-drop-zone p {
     margin: 0;
+    color: #555;
+    font-size: 16px;
 }
 
-.file-input {
-    margin-top: 10px;
-    width: 360px;
-    margin-right: 10px;
+.file-actions {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%;
+    gap: 10px;
+    text-align: center;
+    max-width: 600px;
+    margin-bottom: 10px;
 }
 
-.file-upload-button{
-    margin: 0px;
+.file-comment {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    resize: none;
+    outline: none;
+    transition: border-color 0.3s ease;
+    width: 325px;
+    text-align: center;
+    box-sizing: border-box;
+    padding-top: 15px;
+}
+
+
+.file-comment:focus {
+    border-color: #007bff;
+}
+
+.file-upload-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 15px 20px;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
     width: 200px;
 }
 
-.comment-button {
-    margin-top: 10px;
+.file-upload-button:hover {
+    background-color: #0056b3;
 }
 
 .success-popup {
@@ -50,6 +80,19 @@
     left: 50%;
     transform: translateX(-50%);
     background-color: #4caf50;
+    color: white;
+    padding: 15px;
+    border-radius: 5px;
+    font-size: 16px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.error-popup {
+    position: fixed;
+    bottom: 50%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #f44336;
     color: white;
     padding: 15px;
     border-radius: 5px;

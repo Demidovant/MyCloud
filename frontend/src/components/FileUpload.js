@@ -1,12 +1,12 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import './styles/FileUpload.css';
 
 const FileUpload = () => {
     const [file, setFile] = useState(null);
     const [dragging, setDragging] = useState(false);
+    const [comment, setComment] = useState('');
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
     const [errorMessage, setErrorMessage] = useState(null);
-    const fileInputRef = useRef(null);
 
     const handleFileDrop = (e) => {
         e.preventDefault();
@@ -40,15 +40,13 @@ const FileUpload = () => {
             })
             .then(data => {
                 if (data) {
+                    updateFileComment(data.id);
                     setShowSuccessMessage(true);
                     setFile(null);
-                    fileInputRef.current.value = '';
 
                     setTimeout(() => {
                         setShowSuccessMessage(false);
-                    }, 2000);
-                    setTimeout(() => {
-                        window.location.reload();;
+                        window.location.reload();
                     }, 2000);
                 } else {
                     setErrorMessage('Не удалось загрузить файл');
@@ -60,10 +58,32 @@ const FileUpload = () => {
         }
     };
 
+    const updateFileComment = (fileId) => {
+        if (comment.trim() === '') return;
+
+        fetch(`http://127.0.0.1:8000/api/files/${fileId}/update_comment/`, {
+            method: 'PATCH',
+            headers: {
+                'Authorization': `Token ${localStorage.getItem('authToken')}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ comment }),
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Не удалось обновить комментарий');
+            }
+        })
+        .catch(error => {
+            setErrorMessage(error.message || 'Ошибка при обновлении комментария');
+        });
+    };
+
     return (
         <div className="file-drop-container">
             <div
                 className={`file-drop-zone ${dragging ? 'dragging' : ''}`}
+                onClick={() => document.getElementById('fileInput').click()}
                 onDragOver={(e) => {
                     e.preventDefault();
                     setDragging(true);
@@ -71,15 +91,21 @@ const FileUpload = () => {
                 onDragLeave={() => setDragging(false)}
                 onDrop={handleFileDrop}
             >
-                {file ? <p><i className="fas fa-file-alt"></i> Файл: {file.name}</p> : <p><i className="fas fa-cloud-upload-alt"></i> Перетащите файл сюда</p>}
+                {file ? <p><i className="fas fa-file-alt"></i> Файл: {file.name}</p> : <p><i className="fas fa-cloud-upload-alt"></i> Для загрузки файла нажмите на это поле или перетащите сюда файл</p>}
             </div>
 
-            <div className="file-input-wrapper">
-                <input
-                    ref={fileInputRef}
-                    type="file"
-                    className="file-input"
-                    onChange={handleFileSelect}
+            <input
+                id="fileInput"
+                type="file"
+                style={{ display: 'none' }}
+                onChange={handleFileSelect}
+            />
+
+            <div className="file-actions">
+                <textarea className="file-comment"
+                    placeholder="Введите комментарий к файлу"
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
                 />
                 <button onClick={handleFileUpload} className="file-upload-button">
                     <i className="fas fa-upload"></i> Загрузить файл
