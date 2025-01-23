@@ -11,6 +11,8 @@ const UserManagement = () => {
     const navigate = useNavigate();
     const [updatingUserId, setUpdatingUserId] = useState(null);
     const [passwordModal, setPasswordModal] = useState({ visible: false, userId: null });
+    const [originalUserData, setOriginalUserData] = useState({});
+
 
     const openPasswordModal = (userId) => {
         setPasswordModal({ visible: true, userId });

@@ -203,22 +203,54 @@ const FileManagement = () => {
                                                     'Authorization': `Token ${localStorage.getItem('authToken')}`,
                                                 },
                                             })
-                                                .then(response => {
-                                                    if (response.ok) {
+                                            .then(response => {
+                                                if (response.ok) {
+                                                    const contentType = response.headers.get('Content-Type');
+                                                    if (contentType && (contentType.includes('pdf') || contentType.includes('image') || contentType.includes('text'))) {
                                                         return response.blob();
                                                     } else {
-                                                        throw new Error('Ошибка при скачивании файла');
+                                                        throw new Error('Невозможно отобразить этот файл в браузере');
                                                     }
-                                                })
-                                                .then(blob => {
-                                                    const link = document.createElement('a');
-                                                    const url = window.URL.createObjectURL(blob);
-                                                    link.href = url;
-                                                    link.download = file.name;
-                                                    link.click();
-                                                    window.URL.revokeObjectURL(url);
-                                                })
-                                                .catch(err => alert(err.message));
+                                                } else {
+                                                    throw new Error('Ошибка при получении файла');
+                                                }
+                                            })
+                                            .then(blob => {
+                                                const url = window.URL.createObjectURL(blob);
+                                                const newWindow = window.open(url, '_blank');
+                                                if (!newWindow) {
+                                                    alert('Не удалось открыть файл в новой вкладке');
+                                                }
+                                            })
+                                            .catch(err => alert(err.message));
+                                        }}
+                                    >
+                                        <i className="fas fa-eye"></i> Просмотр
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            fetch(`http://127.0.0.1:8000/api/files/${file.id}/download/`, {
+                                                method: 'GET',
+                                                headers: {
+                                                    'Authorization': `Token ${localStorage.getItem('authToken')}`,
+                                                },
+                                            })
+                                            .then(response => {
+                                                if (response.ok) {
+                                                    return response.blob();
+                                                } else {
+                                                    throw new Error('Ошибка при скачивании файла');
+                                                }
+                                            })
+                                            .then(blob => {
+                                                const link = document.createElement('a');
+                                                const url = window.URL.createObjectURL(blob);
+                                                link.href = url;
+                                                link.download = file.name;
+                                                link.click();
+                                                window.URL.revokeObjectURL(url);
+                                            })
+                                            .catch(err => alert(err.message));
                                         }}
                                     >
                                         <i className="fas fa-download"></i> Скачать

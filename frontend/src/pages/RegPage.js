@@ -6,16 +6,56 @@ const RegPage = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-    const [first_name, setfirst_name] = useState('');
-    const [last_name, setlast_name] = useState('');
+    const [first_name, setFirstName] = useState('');
+    const [last_name, setLastName] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const navigate = useNavigate();
+    const usernameRegex = /^[a-zA-Z][a-zA-Z0-9]{3,19}$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    const validateForm = () => {
+        if (!usernameRegex.test(username)) {
+            setError('Логин должен содержать только латинские буквы и цифры, начинаться с буквы и быть длиной от 4 до 20 символов.');
+            return false;
+        }
+        if (!emailRegex.test(email)) {
+            setError('Введите корректный адрес электронной почты.');
+            return false;
+        }
+        if (password !== confirmPassword) {
+            setError('Пароли не совпадают.');
+            return false;
+        }
+
+        const passwordErrors = validatePassword(password);
+        if (passwordErrors.length > 0) {
+            setError(passwordErrors.join(' '));
+            return false;
+        }
+
+        return true;
+    };
+
+    const validatePassword = (password) => {
+        const errors = [];
+        if (password.length < 6) {
+            errors.push('Пароль должен быть не менее 6 символов.');
+        }
+        if (!/[A-Z]/.test(password)) {
+            errors.push('Пароль должен содержать хотя бы одну заглавную букву.');
+        }
+        if (!/\d/.test(password)) {
+            errors.push('Пароль должен содержать хотя бы одну цифру.');
+        }
+        if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+            errors.push('Пароль должен содержать хотя бы один специальный символ.');
+        }
+        return errors;
+    };
 
     const handleRegister = () => {
-        if (password !== confirmPassword) {
-            setError('Пароли не совпадают');
-            setTimeout(() => setError(''), 3000);
+        if (!validateForm()) {
             return;
         }
 
@@ -60,7 +100,7 @@ const RegPage = () => {
 
     return (
         <div className="container">
-            {success ? ( // Если регистрация успешна, показать только сообщение
+            {success ? (
                 <div className="success-message">
                     <h1>Регистрация прошла успешно!</h1>
                     <p>Вы будете перенаправлены на страницу входа через несколько секунд.</p>
@@ -73,13 +113,13 @@ const RegPage = () => {
                             type="text"
                             placeholder="Имя"
                             value={first_name}
-                            onChange={(e) => setfirst_name(e.target.value)}
+                            onChange={(e) => setFirstName(e.target.value)}
                         />
                         <input
                             type="text"
                             placeholder="Фамилия"
                             value={last_name}
-                            onChange={(e) => setlast_name(e.target.value)}
+                            onChange={(e) => setLastName(e.target.value)}
                         />
                         <input
                             type="text"

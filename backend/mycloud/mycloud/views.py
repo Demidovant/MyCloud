@@ -1,3 +1,5 @@
+from mimetypes import guess_type
+
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from rest_framework.authentication import TokenAuthentication
@@ -50,14 +52,20 @@ class FileViewSet(viewsets.ModelViewSet):
             return Response({"detail": "Forbidden"}, status=status.HTTP_403_FORBIDDEN)
 
         file_path = os.path.join(settings.MEDIA_ROOT, file.file.name)
-        # Проверяем, существует ли файл на сервере
         if not os.path.exists(file_path):
             return Response({"detail": "File not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        # Отправляем файл
+        content_type, _ = guess_type(file_path)
+
         response = FileResponse(open(file_path, 'rb'))
-        response['Content-Type'] = 'application/octet-stream'
-        response['Content-Disposition'] = f'attachment; filename="{file.name}"'
+
+        if content_type and ('pdf' in content_type or 'image' in content_type or 'text' in content_type):
+            response['Content-Type'] = content_type
+            response['Content-Disposition'] = f'inline; filename="{file.name}"'
+        else:
+            response['Content-Type'] = 'application/octet-stream'
+            response['Content-Disposition'] = f'attachment; filename="{file.name}"'
+
         return response
 
     @action(detail=True, methods=['delete'])
