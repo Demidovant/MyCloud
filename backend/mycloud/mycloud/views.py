@@ -11,7 +11,7 @@ from rest_framework import status, viewsets
 from rest_framework.authtoken.models import Token
 from django.utils.timezone import now
 from django.conf import settings
-from django.http import FileResponse, Http404
+from django.http import FileResponse, Http404, HttpResponse
 from django.views import View
 from datetime import timedelta
 from .models import File, TemporaryLink, CustomUser
@@ -19,6 +19,7 @@ from .serializers import FileSerializer, UserSerializer
 import secrets
 import os
 from urllib.parse import quote
+import chardet
 
 
 
@@ -57,9 +58,20 @@ class FileViewSet(viewsets.ModelViewSet):
 
         content_type, _ = guess_type(file_path)
 
-        response = FileResponse(open(file_path, 'rb'))
+        if content_type and 'text' in content_type:
+            with open(file_path, 'rb') as f:
+                raw_data = f.read()
+                detected_encoding = chardet.detect(raw_data)['encoding']
+                if not detected_encoding:
+                    detected_encoding = 'utf-8'
+                decoded_data = raw_data.decode(detected_encoding).encode('utf-8')
 
-        if content_type and ('pdf' in content_type or 'image' in content_type or 'text' in content_type):
+            response = HttpResponse(decoded_data, content_type='text/plain; charset=utf-8')
+            response['Content-Disposition'] = f'inline; filename="{file.name}"'
+            return response
+
+        response = FileResponse(open(file_path, 'rb'))
+        if content_type:
             response['Content-Type'] = content_type
             response['Content-Disposition'] = f'inline; filename="{file.name}"'
         else:
