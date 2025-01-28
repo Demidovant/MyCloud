@@ -303,39 +303,49 @@ const FileManagement = () => {
                         <div className="file-card" key={file.id}>
                             <div className="file-name">{truncateFileName(file.name)}</div>
                             <div className="file-actions">
-                                <button className="view-button"
-                                    onClick={() => {
-                                        fetch(`http://127.0.0.1:8000/api/files/${file.id}/download/`, {
-                                            method: 'GET',
-                                            headers: {
-                                                'Authorization': `Token ${localStorage.getItem('authToken')}`,
-                                            },
-                                        })
-                                        .then(response => {
-                                            if (response.ok) {
-                                                const contentType = response.headers.get('Content-Type');
-                                                if (contentType && (contentType.includes('pdf') || contentType.includes('image') || contentType.includes('text'))) {
-                                                    return response.blob();
-                                                } else {
-                                                    throw new Error('Невозможно отобразить этот файл в браузере');
-                                                }
-                                            } else {
-                                                throw new Error('Ошибка при получении файла');
-                                            }
-                                        })
-                                        .then(blob => {
-                                            const url = window.URL.createObjectURL(blob);
-                                            const newWindow = window.open(url, '_blank');
-                                            if (!newWindow) {
-                                                alert('Не удалось открыть файл в новой вкладке');
-                                            }
-                                        })
-                                        .catch(err => alert(err.message));
-                                    }}
+                            <button className="view-button"
+                                onClick={() => {
+                                    fetch(`http://127.0.0.1:8000/api/files/${file.id}/download/`, {
+                                    method: 'GET',
+                                    headers: {
+                                        'Authorization': `Token ${localStorage.getItem('authToken')}`,
+                                    },
+                                    })
+                                    .then(response => {
+                                        if (response.ok) {
+                                        const contentType = response.headers.get('Content-Type');
+                                        if (contentType && contentType.includes('text')) {
+                                            return response.text().then(text => ({ text, contentType }));
+                                        } else if (contentType && (contentType.includes('pdf') || contentType.includes('image'))) {
+                                            return response.blob().then(blob => ({ blob, contentType }));
+                                        } else {
+                                            throw new Error('Невозможно отобразить этот файл в браузере');
+                                        }
+                                        } else {
+                                        throw new Error('Ошибка при получении файла');
+                                        }
+                                    })
+                                    .then(({ text, blob, contentType }) => {
+                                        if (text) {
+                                        const encodedText = new Blob([text], { type: contentType });
+                                        const url = window.URL.createObjectURL(encodedText);
+                                        const newWindow = window.open(url, '_blank');
+                                        if (!newWindow) {
+                                            alert('Не удалось открыть файл в новой вкладке');
+                                        }
+                                        } else if (blob) {
+                                        const url = window.URL.createObjectURL(blob);
+                                        const newWindow = window.open(url, '_blank');
+                                        if (!newWindow) {
+                                            alert('Не удалось открыть файл в новой вкладке');
+                                        }
+                                        }
+                                    })
+                                    .catch(err => alert(err.message));
+                                }}
                                 >
-                                    <i className="fas fa-eye"></i>
+                                <i className="fas fa-eye"></i>
                                 </button>
-                           
                                 <button className="download-button"
                                     onClick={() => {
                                         fetch(`http://127.0.0.1:8000/api/files/${file.id}/download/`, {
