@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 import './styles/GenerateTempLink.css';
 
 const GenerateTempLink = ({ fileId, className }) => {
@@ -55,6 +56,11 @@ const GenerateTempLink = ({ fileId, className }) => {
             )}
         </div>
     );
+};
+
+GenerateTempLink.propTypes = {
+    fileId: PropTypes.string.isRequired,
+    className: PropTypes.string.isRequired,
 };
 
 export default GenerateTempLink;

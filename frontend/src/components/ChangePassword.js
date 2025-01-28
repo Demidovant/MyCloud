@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import './styles/ChangePassword.css';
 
 const ChangePassword = ({ token, userId, onClose }) => {
@@ -138,6 +139,12 @@ const ChangePassword = ({ token, userId, onClose }) => {
             )}
         </div>
     );
+};
+
+ChangePassword.propTypes = {
+    token: PropTypes.string.isRequired,
+    userId: PropTypes.string.isRequired,
+    onClose: PropTypes.func.isRequired,
 };
 
 export default ChangePassword;

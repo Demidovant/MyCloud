@@ -54,7 +54,7 @@ const AdminPage = () => {
                 } else {
                     navigate('/');
                 }
-            } catch (error) {
+            } catch {
                 navigate('/login');
             } finally {
                 setLoading(false);

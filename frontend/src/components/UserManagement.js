@@ -5,14 +5,11 @@ import ChangePassword from './ChangePassword';
 
 const UserManagement = () => {
     const [users, setUsers] = useState([]);
-    const [isAdmin, setIsAdmin] = useState(false);
     const [filesData, setFilesData] = useState({});
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
     const [updatingUserId, setUpdatingUserId] = useState(null);
     const [passwordModal, setPasswordModal] = useState({ visible: false, userId: null });
-    const [originalUserData, setOriginalUserData] = useState({});
-
 
     const openPasswordModal = (userId) => {
         setPasswordModal({ visible: true, userId });
@@ -99,14 +96,12 @@ const UserManagement = () => {
     };
     
 
-    const handleEditUser = (userId, userData) => {
-        setOriginalUserData(userData);
+    const handleEditUser = (userId) => {
         setUpdatingUserId(userId);
     };
 
     const handleCancelEdit = () => {
         setUpdatingUserId(null);
-        setOriginalUserData({});
         const token = localStorage.getItem('authToken');
         fetchUsers(token);
     };
@@ -156,7 +151,6 @@ const UserManagement = () => {
         .then(response => response.json())
         .then(data => {
             if (data.detail === "Token is valid") {
-                setIsAdmin(data.is_admin);
                 fetchUsers(token);
                 setLoading(false);
             } else {
@@ -221,8 +215,6 @@ const UserManagement = () => {
     if (loading) {
         return <div>Загрузка...</div>;
     }
-
-
 
     return (
         <div className="user-management-container">
@@ -337,18 +329,18 @@ const UserManagement = () => {
                                     )}
                                 </td>
                                 <td>
-                                <button
-                                    className="delete-button"
+                                    <button
+                                        className="delete-button"
                                         onClick={() => handleDeleteUser(user.id)}
                                     >
                                         <i className="fas fa-trash-alt"></i> Удалить пользователя
                                     </button>
                                 </td>
                                 <td>
-                                <button onClick={() => openPasswordModal(user.id)}>
-                                    <i className="fas fa-key"></i> Сменить пароль
-                                </button>
-                            </td>
+                                    <button onClick={() => openPasswordModal(user.id)}>
+                                        <i className="fas fa-key"></i> Сменить пароль
+                                    </button>
+                                </td>
                             </tr>
                         );
                     })}
@@ -360,7 +352,7 @@ const UserManagement = () => {
                         <ChangePassword
                             token={localStorage.getItem('authToken')}
                             userId={passwordModal.userId}
-                            onClose={closePasswordModal}
+                            closeModal={closePasswordModal}
                         />
                     </div>
                 </div>

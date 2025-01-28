@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ChangePassword from './ChangePassword';
+import PropTypes from 'prop-types';
 import './styles/UserInfo.css';
 
 const UserInfo = ({ token }) => {
@@ -34,7 +35,7 @@ const UserInfo = ({ token }) => {
                 setOriginalUser(data);
                 setIsLoading(false);
             })
-            .catch(error => {
+            .catch(() => {
                 setError('Ошибка загрузки данных профиля');
                 setIsLoading(false);
             });
@@ -178,6 +179,10 @@ const UserInfo = ({ token }) => {
             </button>
         </div>
     );
+};
+
+UserInfo.propTypes = {
+    token: PropTypes.string.isRequired,
 };
 
 export default UserInfo;

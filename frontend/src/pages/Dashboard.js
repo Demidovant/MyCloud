@@ -32,7 +32,7 @@ const Dashboard = () => {
             }
             throw new Error('Token verification failed');
         })
-        .then(data => {
+        .then(() => {
             setIsAuthenticated(true);
 
             return fetch('http://127.0.0.1:8000/api/users/profile/', {

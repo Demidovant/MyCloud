@@ -80,7 +80,7 @@ const RegPage = () => {
             }
             return response.json();
         })
-        .then(data => {
+        .then(() => {
             setSuccess('Регистрация прошла успешно! Вы будете перенаправлены на страницу входа.');
             setTimeout(() => {
                 navigate('/login');
