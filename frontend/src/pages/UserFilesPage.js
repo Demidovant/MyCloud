@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from "../config";
 import FileManagement from '../components/FileManagement';
 import '../styles/UserFilesPage.css';
 
@@ -15,7 +16,7 @@ const UserFilesPage = () => {
 
             // Если id не получено из URL, запрашиваем данные о текущем пользователе
             if (!userId) {
-                const response = await fetch('http://127.0.0.1:8000/api/users/profile/', {
+                const response = await fetch(`${API_BASE_URL}/api/users/profile/`, {
                     headers: {
                         'Authorization': `Token ${token}`,
                     },
@@ -31,7 +32,7 @@ const UserFilesPage = () => {
             }
 
             // Получаем данные пользователя по id
-            const response = await fetch(`http://127.0.0.1:8000/api/users/${userId}/`, {
+            const response = await fetch(`${API_BASE_URL}/api/users/${userId}/`, {
                 headers: {
                     'Authorization': `Token ${token}`,
                 },

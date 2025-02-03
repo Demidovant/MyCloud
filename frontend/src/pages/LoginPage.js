@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { API_BASE_URL } from "../config";
 import '../styles/LoginPage.css';
+
 
 const LoginPage = () => {
     const [username, setUsername] = useState('');
@@ -11,7 +13,7 @@ const LoginPage = () => {
     useEffect(() => {
         const token = localStorage.getItem('authToken');
         if (token) {
-            fetch('http://127.0.0.1:8000/api/users/profile', {
+            fetch(`${API_BASE_URL}/api/users/profile`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Token ${token}`,
@@ -38,7 +40,7 @@ const LoginPage = () => {
     }, [navigate]);
 
     const handleLogin = () => {
-        fetch('http://127.0.0.1:8000/api/token/auth/', {
+        fetch(`${API_BASE_URL}/api/token/auth/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -50,7 +52,7 @@ const LoginPage = () => {
             if (data.token) {
                 localStorage.setItem('authToken', data.token);
 
-                fetch('http://127.0.0.1:8000/api/users/profile', {
+                fetch(`${API_BASE_URL}/api/users/profile`, {
                     method: 'GET',
                     headers: {
                         'Authorization': `Token ${data.token}`,

@@ -2,22 +2,43 @@ services:
   backend:
     build:
       context: ./backend
+      dockerfile: Dockerfile
+    image: mycloud_backend
     env_file:
       - ./backend/.env
     ports:
       - "8000:8000"
+    networks:
+      - mycloud_network
     depends_on:
       - db
+    volumes:
+      - ${FILE_STORAGE_PATH}:${FILE_STORAGE_PATH}
+      - ${LOG_FILES_DIR}:${LOG_FILES_DIR}
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: mycloud_frontend
+    ports:
+      - "3000:3000"
+    networks:
+      - mycloud_network
+
   db:
     image: postgres:16
     container_name: postgres_16
     environment:
       POSTGRES_DB: mycloud
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: mycloud
+      POSTGRES_PASSWORD: 1qaz@WSX
     ports:
       - "5432:5432"
+    networks:
+      - mycloud_network
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-volumes:
-  postgres_data:
+      - ${FILE_STORAGE_PATH}/postgres_data:/var/lib/postgresql/data
+
+networks:
+  mycloud_network:

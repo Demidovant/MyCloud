@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from "../config";
 import ChangePassword from './ChangePassword';
 import PropTypes from 'prop-types';
 import './styles/UserInfo.css';
@@ -23,7 +24,7 @@ const UserInfo = ({ token }) => {
 
     useEffect(() => {
         setIsLoading(true);
-        fetch('http://127.0.0.1:8000/api/users/profile/', {
+        fetch(`${API_BASE_URL}/api/users/profile/`, {
             method: 'GET',
             headers: {
                 'Authorization': `Token ${token}`,
@@ -42,7 +43,7 @@ const UserInfo = ({ token }) => {
     }, [token]);
 
     const handleSave = () => {
-        fetch('http://127.0.0.1:8000/api/users/profile/update/', {
+        fetch(`${API_BASE_URL}/api/users/profile/update/`, {
             method: 'PATCH',
             headers: {
                 'Authorization': `Token ${token}`,

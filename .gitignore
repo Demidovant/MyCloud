@@ -122,7 +122,6 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-.env
 .venv
 .venv1
 env/
@@ -170,4 +169,5 @@ backend/mycloud/media/uploads
 /backend/mycloud/mycloud/migrations/__init__.py
 /backend/mycloud/__init__.py
 /backend/__init__.py
+/backend/mycloud/staticfiles
 /frontend/node_modules

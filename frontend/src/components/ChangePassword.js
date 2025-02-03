@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from "../config";
 import PropTypes from 'prop-types';
 import './styles/ChangePassword.css';
 
@@ -34,7 +35,7 @@ const ChangePassword = ({ token, userId, onClose }) => {
     useEffect(() => {
         const checkUserPermissions = async () => {
             try {
-                const profileResponse = await fetch('http://127.0.0.1:8000/api/users/profile', {
+                const profileResponse = await fetch(`${API_BASE_URL}/api/users/profile`, {
                     headers: {
                         'Authorization': `Token ${token}`,
                     },
@@ -43,9 +44,9 @@ const ChangePassword = ({ token, userId, onClose }) => {
                 if (profileResponse.ok) {
                     const profileData = await profileResponse.json();
                     if (profileData.is_superuser || profileData.is_staff) {
-                        fetchUserDetails(`http://127.0.0.1:8000/api/users/${userId}/`);
+                        fetchUserDetails(`${API_BASE_URL}/api/users/${userId}/`);
                     } else {
-                        fetchUserDetails('http://127.0.0.1:8000/api/users/profile');
+                        fetchUserDetails(`${API_BASE_URL}/api/users/profile`);
                     }
                 } else {
                     setUsername('Ошибка проверки прав');
@@ -67,7 +68,7 @@ const ChangePassword = ({ token, userId, onClose }) => {
             return;
         }
 
-        fetch(`http://127.0.0.1:8000/api/users/${userId}/change_password/`, {
+        fetch(`${API_BASE_URL}/api/users/${userId}/change_password/`, {
             method: 'POST',
             headers: {
                 'Authorization': `Token ${token}`,

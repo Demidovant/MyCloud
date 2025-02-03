@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from "../config";
 import '../styles/Dashboard.css';
 import FileUpload from '../components/FileUpload';
 import FileManagement from '../components/FileManagement';
@@ -18,7 +19,7 @@ const Dashboard = () => {
             return;
         }
 
-        fetch('http://127.0.0.1:8000/api/token/verify/', {
+        fetch(`${API_BASE_URL}/api/token/verify/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -35,7 +36,7 @@ const Dashboard = () => {
         .then(() => {
             setIsAuthenticated(true);
 
-            return fetch('http://127.0.0.1:8000/api/users/profile/', {
+            return fetch(`${API_BASE_URL}/api/users/profile/`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Token ${token}`,

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { API_BASE_URL } from "../config";
 
 const RegPage = () => {
     const [username, setUsername] = useState('');
@@ -67,7 +68,7 @@ const RegPage = () => {
             last_name
         };
 
-        fetch('http://127.0.0.1:8000/api/users/register/', {
+        fetch(`${API_BASE_URL}/api/users/register/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

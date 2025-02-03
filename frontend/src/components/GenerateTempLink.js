@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_BASE_URL } from "../config";
 import PropTypes from 'prop-types';
 import './styles/GenerateTempLink.css';
 
@@ -11,7 +12,7 @@ const GenerateTempLink = ({ fileId, className }) => {
         setIsLoading(true);
         const token = localStorage.getItem('authToken');
         try {
-            const response = await fetch(`http://127.0.0.1:8000/api/files/${fileId}/generate_link/`, {
+            const response = await fetch(`${API_BASE_URL}/api/files/${fileId}/generate_link/`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Token ${token}`,

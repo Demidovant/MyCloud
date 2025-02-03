@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from "../config";
 import './styles/UserManagement.css';
 import ChangePassword from './ChangePassword';
 
@@ -22,7 +23,7 @@ const UserManagement = () => {
 
     const fetchUsers = async (token) => {
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/users/', {
+            const response = await fetch(`${API_BASE_URL}/api/users/`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Token ${token}`,
@@ -43,7 +44,7 @@ const UserManagement = () => {
 
     const fetchUserFiles = async (token, userId) => {
         try {
-            const response = await fetch(`http://127.0.0.1:8000/api/files/?user_id=${userId}`, {
+            const response = await fetch(`${API_BASE_URL}/api/files/?user_id=${userId}`, {
                 headers: {
                     'Authorization': `Token ${token}`,
                 },
@@ -77,7 +78,7 @@ const UserManagement = () => {
         }
     
         try {
-            const response = await fetch(`http://127.0.0.1:8000/api/users/${userId}/`, {
+            const response = await fetch(`${API_BASE_URL}/api/users/${userId}/`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Token ${token}`,
@@ -109,7 +110,7 @@ const UserManagement = () => {
     const handleSaveUser = async (userId, updatedData) => {
         const token = localStorage.getItem('authToken');
         try {
-            const response = await fetch(`http://127.0.0.1:8000/api/users/${userId}/update/`, {
+            const response = await fetch(`${API_BASE_URL}/api/users/${userId}/update/`, {
                 method: 'PATCH',
                 headers: {
                     'Authorization': `Token ${token}`,
@@ -142,7 +143,7 @@ const UserManagement = () => {
             return;
         }
 
-        fetch('http://127.0.0.1:8000/api/token/verify/', {
+        fetch(`${API_BASE_URL}/api/token/verify/`, {
             method: 'POST',
             headers: {
                 'Authorization': `Token ${token}`,
@@ -183,7 +184,7 @@ const UserManagement = () => {
         }
     
         try {
-            const response = await fetch(`http://127.0.0.1:8000/api/users/${userId}/update_attributes/`, {
+            const response = await fetch(`${API_BASE_URL}/api/users/${userId}/update_attributes/`, {
                 method: 'PATCH',
                 headers: {
                     'Authorization': `Token ${token}`,

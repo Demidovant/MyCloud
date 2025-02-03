@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from "../config";
 import '../styles/AdminPage.css';
 import FileUpload from '../components/FileUpload';
 import FileManagement from '../components/FileManagement';
@@ -21,7 +22,7 @@ const AdminPage = () => {
 
         const verifyToken = async () => {
             try {
-                const verifyResponse = await fetch('http://127.0.0.1:8000/api/token/verify/', {
+                const verifyResponse = await fetch(`${API_BASE_URL}/api/token/verify/`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -34,7 +35,7 @@ const AdminPage = () => {
                     throw new Error('Invalid token');
                 }
 
-                const profileResponse = await fetch('http://127.0.0.1:8000/api/users/profile/', {
+                const profileResponse = await fetch(`${API_BASE_URL}/api/users/profile/`, {
                     method: 'GET',
                     headers: {
                         'Authorization': `Token ${token}`,

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_BASE_URL } from "../config";
 import './styles/FileUpload.css';
 
 const FileUpload = () => {
@@ -25,7 +26,7 @@ const FileUpload = () => {
             const formData = new FormData();
             formData.append('file', file);
 
-            fetch('http://127.0.0.1:8000/api/files/', {
+            fetch(`${API_BASE_URL}/api/files/`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Token ${localStorage.getItem('authToken')}`,
@@ -61,7 +62,7 @@ const FileUpload = () => {
     const updateFileComment = (fileId) => {
         if (comment.trim() === '') return;
 
-        fetch(`http://127.0.0.1:8000/api/files/${fileId}/update_comment/`, {
+        fetch(`${API_BASE_URL}/api/files/${fileId}/update_comment/`, {
             method: 'PATCH',
             headers: {
                 'Authorization': `Token ${localStorage.getItem('authToken')}`,

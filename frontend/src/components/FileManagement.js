@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import { API_BASE_URL } from "../config";
 import './styles/FileManagement.css';
 import GenerateTempLink from './GenerateTempLink';
 
@@ -14,7 +15,7 @@ const FileManagement = () => {
     const fetchUserProfile = async () => {
         try {
             const token = localStorage.getItem('authToken');
-            const response = await fetch('http://127.0.0.1:8000/api/users/profile/', {
+            const response = await fetch(`${API_BASE_URL}/api/users/profile/`, {
                 headers: {
                     'Authorization': `Token ${token}`,
                 },
@@ -38,7 +39,7 @@ const FileManagement = () => {
     const fetchFiles = async (userId) => {
         try {
             const token = localStorage.getItem('authToken');
-            const response = await fetch(`http://127.0.0.1:8000/api/files/?user_id=${userId}`, {
+            const response = await fetch(`${API_BASE_URL}/api/files/?user_id=${userId}`, {
                 headers: {
                     'Authorization': `Token ${token}`,
                 },
@@ -138,7 +139,7 @@ const FileManagement = () => {
 
                                             if (newName) {
                                                 const newFileName = newName + fileExtension;
-                                                fetch(`http://127.0.0.1:8000/api/files/${file.id}/rename_file/`, {
+                                                fetch(`${API_BASE_URL}/api/files/${file.id}/rename_file/`, {
                                                     method: 'PATCH',
                                                     headers: {
                                                         'Authorization': `Token ${localStorage.getItem('authToken')}`,
@@ -168,7 +169,7 @@ const FileManagement = () => {
                                         onClick={() => {
                                             const newComment = prompt('Введите новый комментарий:', file.comment || '');
                                             if (newComment !== null) {
-                                                fetch(`http://127.0.0.1:8000/api/files/${file.id}/update_comment/`, {
+                                                fetch(`${API_BASE_URL}/api/files/${file.id}/update_comment/`, {
                                                     method: 'PATCH',
                                                     headers: {
                                                         'Authorization': `Token ${localStorage.getItem('authToken')}`,
@@ -194,7 +195,7 @@ const FileManagement = () => {
                                 <td>
                                 <button
                                     onClick={() => {
-                                        fetch(`http://127.0.0.1:8000/api/files/${file.id}/download/`, {
+                                        fetch(`${API_BASE_URL}/api/files/${file.id}/download/`, {
                                             method: 'GET',
                                             headers: {
                                                 'Authorization': `Token ${localStorage.getItem('authToken')}`,
@@ -237,7 +238,7 @@ const FileManagement = () => {
                                 </button>
                                     <button
                                         onClick={() => {
-                                            fetch(`http://127.0.0.1:8000/api/files/${file.id}/download/`, {
+                                            fetch(`${API_BASE_URL}/api/files/${file.id}/download/`, {
                                                 method: 'GET',
                                                 headers: {
                                                     'Authorization': `Token ${localStorage.getItem('authToken')}`,
@@ -267,7 +268,7 @@ const FileManagement = () => {
                                     className="delete-button"
                                     onClick={() => {
                                         if (window.confirm(`Вы уверены, что хотите удалить файл ${file.name}?`)) {
-                                        fetch(`http://127.0.0.1:8000/api/files/${file.id}/delete_file/`, {
+                                        fetch(`${API_BASE_URL}/api/files/${file.id}/delete_file/`, {
                                             method: 'DELETE',
                                             headers: {
                                             'Authorization': `Token ${localStorage.getItem('authToken')}`,
@@ -305,7 +306,7 @@ const FileManagement = () => {
                             <div className="file-actions">
                             <button className="view-button"
                                 onClick={() => {
-                                    fetch(`http://127.0.0.1:8000/api/files/${file.id}/download/`, {
+                                    fetch(`${API_BASE_URL}/api/files/${file.id}/download/`, {
                                     method: 'GET',
                                     headers: {
                                         'Authorization': `Token ${localStorage.getItem('authToken')}`,
@@ -348,7 +349,7 @@ const FileManagement = () => {
                                 </button>
                                 <button className="download-button"
                                     onClick={() => {
-                                        fetch(`http://127.0.0.1:8000/api/files/${file.id}/download/`, {
+                                        fetch(`${API_BASE_URL}/api/files/${file.id}/download/`, {
                                             method: 'GET',
                                             headers: {
                                                 'Authorization': `Token ${localStorage.getItem('authToken')}`,
