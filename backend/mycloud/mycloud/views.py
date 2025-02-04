@@ -1,5 +1,4 @@
 from mimetypes import guess_type
-
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from rest_framework.authentication import TokenAuthentication
@@ -20,7 +19,6 @@ import secrets
 import os
 from urllib.parse import quote
 import chardet
-
 
 
 class FileViewSet(viewsets.ModelViewSet):

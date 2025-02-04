@@ -1,15 +1,17 @@
+import GenerateTempLink from './GenerateTempLink';
+import PropTypes from 'prop-types';
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { API_BASE_URL } from "../config";
 import './styles/FileManagement.css';
-import GenerateTempLink from './GenerateTempLink';
 
-const FileManagement = () => {
+const FileManagement = ({ refresh }) => {
     const { id: urlUserId } = useParams();
     const [files, setFiles] = useState([]);
     const [fileStats, setFileStats] = useState({ fileCount: 0, totalFileSize: 0 });
     const [userId, setUserId] = useState(null);
     const [isGridView, setIsGridView] = useState(false);
+    const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'asc' });
 
     // Функция для получения данных пользователя
     const fetchUserProfile = async () => {
@@ -86,7 +88,6 @@ const FileManagement = () => {
         }
     }, [urlUserId]);
 
-
     // Функция для обрезания имени файла до 30 символов
     const truncateFileName = (name) => {
         return name.length > 30 ? name.slice(0, 30) + '...' : name;
@@ -97,6 +98,56 @@ const FileManagement = () => {
         setIsGridView(newViewMode);
         localStorage.setItem('viewMode', newViewMode ? 'grid' : 'table');
     };
+
+    useEffect(() => {
+        if (userId) fetchFiles(userId);
+    }, [refresh, userId]);
+
+    // Сортировка файлов
+    const handleSort = (key) => {
+        let direction = 'asc';
+        if (sortConfig.key === key && sortConfig.direction === 'asc') {
+            direction = 'desc';
+        }
+        setSortConfig({ key, direction });
+    };
+
+    // Функция для отображения стрелок сортировки
+    const getSortArrow = (key) => {
+        if (sortConfig.key === key) {
+            return sortConfig.direction === 'asc' 
+            ? <> <i className="fas fa-arrow-up"></i></> 
+            : <> <i className="fas fa-arrow-down"></i></>;
+        }
+        return null;
+    };
+
+    // Сортированный список файлов
+    const sortedFiles = React.useMemo(() => {
+        return [...files].sort((a, b) => {
+            if (sortConfig.key) {
+                const aValue = a[sortConfig.key];
+                const bValue = b[sortConfig.key];
+
+                if (sortConfig.key.includes('_at')) {
+                    const aDate = new Date(aValue).getTime();
+                    const bDate = new Date(bValue).getTime();
+                    return sortConfig.direction === 'asc' ? aDate - bDate : bDate - aDate;
+                }
+
+                if (typeof aValue === 'string' && typeof bValue === 'string') {
+                    return sortConfig.direction === 'asc' 
+                        ? aValue.localeCompare(bValue) 
+                        : bValue.localeCompare(aValue);
+                }
+
+                return sortConfig.direction === 'asc' 
+                    ? aValue - bValue 
+                    : bValue - aValue;
+            }
+            return 0;
+        });
+    }, [files, sortConfig]);
 
     return (
         <div className="file-management-container">
@@ -114,87 +165,139 @@ const FileManagement = () => {
             <table>
                 <thead>
                     <tr>
-                        <th>Имя файла</th>
-                        <th>Размер</th>
-                        <th>Дата загрузки</th>
-                        <th>Дата обновления</th>
-                        <th>Дата последнего скачивания</th>
-                        <th>Комментарий</th>
+                        <th onClick={() => handleSort('name')}>
+                            Имя файла{getSortArrow('name')}
+                        </th>
+                        <th onClick={() => handleSort('size')}>
+                            Размер{getSortArrow('size')}
+                        </th>
+                        <th onClick={() => handleSort('uploaded_at')}>
+                            Дата загрузки{getSortArrow('uploaded_at')}
+                        </th>
+                        <th onClick={() => handleSort('updated_at')}>
+                            Дата обновления{getSortArrow('updated_at')}
+                        </th>
+                        <th onClick={() => handleSort('last_downloaded_at')}>
+                            Дата последнего скачивания{getSortArrow('last_downloaded_at')}
+                        </th>
+                        <th onClick={() => handleSort('comment')}>
+                            Комментарий{getSortArrow('comment')}
+                        </th>
                         <th>Действия</th>
                         <th>Временная ссылка</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {files
-                        .slice()
-                        .sort((a, b) => a.name.localeCompare(b.name))
-                        .map((file) => (
-                            <tr key={file.id}>
-                                <td>{file.name}
-                                    <br />
-                                    <button
-                                        onClick={() => {
-                                            const fileNameWithoutExtension = file.name.slice(0, file.name.lastIndexOf('.'));
-                                            const fileExtension = file.name.slice(file.name.lastIndexOf('.'));
-                                            const newName = prompt('Введите новое имя файла:', fileNameWithoutExtension);
+                    {sortedFiles.map((file) => (
+                        <tr key={file.id}>
+                            <td>{file.name}
+                                <br />
+                                <button
+                                    onClick={() => {
+                                        const fileNameWithoutExtension = file.name.slice(0, file.name.lastIndexOf('.'));
+                                        const fileExtension = file.name.slice(file.name.lastIndexOf('.'));
+                                        const newName = prompt('Введите новое имя файла:', fileNameWithoutExtension);
 
-                                            if (newName) {
-                                                const newFileName = newName + fileExtension;
-                                                fetch(`${API_BASE_URL}/api/files/${file.id}/rename_file/`, {
-                                                    method: 'PATCH',
-                                                    headers: {
-                                                        'Authorization': `Token ${localStorage.getItem('authToken')}`,
-                                                        'Content-Type': 'application/json',
-                                                    },
-                                                    body: JSON.stringify({ name: newFileName }),
+                                        if (newName) {
+                                            const newFileName = newName + fileExtension;
+                                            fetch(`${API_BASE_URL}/api/files/${file.id}/rename_file/`, {
+                                                method: 'PATCH',
+                                                headers: {
+                                                    'Authorization': `Token ${localStorage.getItem('authToken')}`,
+                                                    'Content-Type': 'application/json',
+                                                },
+                                                body: JSON.stringify({ name: newFileName }),
+                                            })
+                                                .then(response => response.json())
+                                                .then(() => {
+                                                    const updatedFiles = files.map(f => (f.id === file.id ? { ...f, name: newFileName } : f));
+                                                    setFiles(updatedFiles);
+                                                    fetchFiles(userId);
                                                 })
-                                                    .then(response => response.json())
-                                                    .then(() => {
-                                                        const updatedFiles = files.map(f => (f.id === file.id ? { ...f, name: newFileName } : f));
+                                                .catch(() => alert('Ошибка при переименовании файла'));
+                                        }
+                                    }}
+                                >
+                                    <i className="fas fa-edit"></i> Переименовать
+                                </button>
+                            </td>
+                            <td>{formatSize(file.size)}</td>
+                            <td>{new Date(file.uploaded_at).toLocaleString()}</td>
+                            <td>{new Date(file.updated_at).toLocaleString()}</td>
+                            <td>{file.last_downloaded_at ? new Date(file.last_downloaded_at).toLocaleString() : 'Никогда'}</td>
+                            <td>{file.comment || "Нет комментария"}
+                                <br />
+                                <button
+                                    onClick={() => {
+                                        const newComment = prompt('Введите новый комментарий:', file.comment || '');
+                                        if (newComment !== null) {
+                                            fetch(`${API_BASE_URL}/api/files/${file.id}/update_comment/`, {
+                                                method: 'PATCH',
+                                                headers: {
+                                                    'Authorization': `Token ${localStorage.getItem('authToken')}`,
+                                                    'Content-Type': 'application/json',
+                                                },
+                                                body: JSON.stringify({ comment: newComment }),
+                                            })
+                                                .then(response => {
+                                                    if (response.ok) {
+                                                        const updatedFiles = files.map(f => (f.id === file.id ? { ...f, comment: newComment } : f));
                                                         setFiles(updatedFiles);
                                                         fetchFiles(userId);
-                                                    })
-                                                    .catch(() => alert('Ошибка при переименовании файла'));
+                                                    } else {
+                                                        alert('Ошибка при обновлении комментария');
+                                                    }
+                                                });
+                                        }
+                                    }}
+                                >
+                                    <i className="fas fa-comment-dots"></i> Редактировать комментарий
+                                </button>
+                            </td>
+                            <td>
+                            <button
+                                onClick={() => {
+                                    fetch(`${API_BASE_URL}/api/files/${file.id}/download/`, {
+                                        method: 'GET',
+                                        headers: {
+                                            'Authorization': `Token ${localStorage.getItem('authToken')}`,
+                                        },
+                                    })
+                                    .then(response => {
+                                        if (response.ok) {
+                                            const contentType = response.headers.get('Content-Type');
+                                            if (contentType && contentType.includes('text')) {
+                                                return response.text().then(text => ({ text, contentType }));
+                                            } else if (contentType && (contentType.includes('pdf') || contentType.includes('image'))) {
+                                                return response.blob().then(blob => ({ blob, contentType }));
+                                            } else {
+                                                throw new Error('Невозможно отобразить этот файл в браузере');
                                             }
-                                        }}
-                                    >
-                                        <i className="fas fa-edit"></i> Переименовать
-                                    </button>
-                                </td>
-                                <td>{formatSize(file.size)}</td>
-                                <td>{new Date(file.uploaded_at).toLocaleString()}</td>
-                                <td>{new Date(file.updated_at).toLocaleString()}</td>
-                                <td>{file.last_downloaded_at ? new Date(file.last_downloaded_at).toLocaleString() : 'Никогда'}</td>
-                                <td>{file.comment || "Нет комментария"}
-                                    <br />
-                                    <button
-                                        onClick={() => {
-                                            const newComment = prompt('Введите новый комментарий:', file.comment || '');
-                                            if (newComment !== null) {
-                                                fetch(`${API_BASE_URL}/api/files/${file.id}/update_comment/`, {
-                                                    method: 'PATCH',
-                                                    headers: {
-                                                        'Authorization': `Token ${localStorage.getItem('authToken')}`,
-                                                        'Content-Type': 'application/json',
-                                                    },
-                                                    body: JSON.stringify({ comment: newComment }),
-                                                })
-                                                    .then(response => {
-                                                        if (response.ok) {
-                                                            const updatedFiles = files.map(f => (f.id === file.id ? { ...f, comment: newComment } : f));
-                                                            setFiles(updatedFiles);
-                                                            fetchFiles(userId);
-                                                        } else {
-                                                            alert('Ошибка при обновлении комментария');
-                                                        }
-                                                    });
+                                        } else {
+                                            throw new Error('Ошибка при получении файла');
+                                        }
+                                    })
+                                    .then(({ text, blob, contentType }) => {
+                                        if (text) {
+                                            const encodedText = new Blob([text], { type: contentType });
+                                            const url = window.URL.createObjectURL(encodedText);
+                                            const newWindow = window.open(url, '_blank');
+                                            if (!newWindow) {
+                                                alert('Не удалось открыть файл в новой вкладке');
                                             }
-                                        }}
-                                    >
-                                        <i className="fas fa-comment-dots"></i> Редактировать комментарий
-                                    </button>
-                                </td>
-                                <td>
+                                        } else if (blob) {
+                                            const url = window.URL.createObjectURL(blob);
+                                            const newWindow = window.open(url, '_blank');
+                                            if (!newWindow) {
+                                                alert('Не удалось открыть файл в новой вкладке');
+                                            }
+                                        }
+                                    })
+                                    .catch(err => alert(err.message));
+                                }}
+                            >
+                                <i className="fas fa-eye"></i> Просмотр
+                            </button>
                                 <button
                                     onClick={() => {
                                         fetch(`${API_BASE_URL}/api/files/${file.id}/download/`, {
@@ -205,99 +308,56 @@ const FileManagement = () => {
                                         })
                                         .then(response => {
                                             if (response.ok) {
-                                                const contentType = response.headers.get('Content-Type');
-                                                if (contentType && contentType.includes('text')) {
-                                                    return response.text().then(text => ({ text, contentType }));
-                                                } else if (contentType && (contentType.includes('pdf') || contentType.includes('image'))) {
-                                                    return response.blob().then(blob => ({ blob, contentType }));
-                                                } else {
-                                                    throw new Error('Невозможно отобразить этот файл в браузере');
-                                                }
+                                                return response.blob();
                                             } else {
-                                                throw new Error('Ошибка при получении файла');
+                                                throw new Error('Ошибка при скачивании файла');
                                             }
                                         })
-                                        .then(({ text, blob, contentType }) => {
-                                            if (text) {
-                                                const encodedText = new Blob([text], { type: contentType });
-                                                const url = window.URL.createObjectURL(encodedText);
-                                                const newWindow = window.open(url, '_blank');
-                                                if (!newWindow) {
-                                                    alert('Не удалось открыть файл в новой вкладке');
-                                                }
-                                            } else if (blob) {
-                                                const url = window.URL.createObjectURL(blob);
-                                                const newWindow = window.open(url, '_blank');
-                                                if (!newWindow) {
-                                                    alert('Не удалось открыть файл в новой вкладке');
-                                                }
-                                            }
+                                        .then(blob => {
+                                            const link = document.createElement('a');
+                                            const url = window.URL.createObjectURL(blob);
+                                            link.href = url;
+                                            link.download = file.name;
+                                            link.click();
+                                            window.URL.revokeObjectURL(url);
+                                            fetchFiles(userId);
                                         })
                                         .catch(err => alert(err.message));
                                     }}
                                 >
-                                    <i className="fas fa-eye"></i> Просмотр
+                                    <i className="fas fa-download"></i> Скачать
                                 </button>
-                                    <button
-                                        onClick={() => {
-                                            fetch(`${API_BASE_URL}/api/files/${file.id}/download/`, {
-                                                method: 'GET',
-                                                headers: {
-                                                    'Authorization': `Token ${localStorage.getItem('authToken')}`,
-                                                },
-                                            })
-                                            .then(response => {
-                                                if (response.ok) {
-                                                    return response.blob();
-                                                } else {
-                                                    throw new Error('Ошибка при скачивании файла');
-                                                }
-                                            })
-                                            .then(blob => {
-                                                const link = document.createElement('a');
-                                                const url = window.URL.createObjectURL(blob);
-                                                link.href = url;
-                                                link.download = file.name;
-                                                link.click();
-                                                window.URL.revokeObjectURL(url);
-                                                fetchFiles(userId);
-                                            })
-                                            .catch(err => alert(err.message));
-                                        }}
-                                    >
-                                        <i className="fas fa-download"></i> Скачать
-                                    </button>
-                                    <button
-                                    className="delete-button"
-                                    onClick={() => {
-                                        if (window.confirm(`Вы уверены, что хотите удалить файл ${file.name}?`)) {
-                                        fetch(`${API_BASE_URL}/api/files/${file.id}/delete_file/`, {
-                                            method: 'DELETE',
-                                            headers: {
-                                            'Authorization': `Token ${localStorage.getItem('authToken')}`,
-                                            },
-                                        })
-                                        .then(response => {
-                                            if (response.ok) {
-                                            const updatedFiles = files.filter((f) => f.id !== file.id);
-                                            setFiles(updatedFiles);
-                                            calculateFileStats(updatedFiles);
-                                            } else {
-                                            alert('Ошибка при удалении файла');
-                                            }
-                                        });
+                                <button
+                                className="delete-button"
+                                onClick={() => {
+                                    if (window.confirm(`Вы уверены, что хотите удалить файл ${file.name}?`)) {
+                                    fetch(`${API_BASE_URL}/api/files/${file.id}/delete_file/`, {
+                                        method: 'DELETE',
+                                        headers: {
+                                        'Authorization': `Token ${localStorage.getItem('authToken')}`,
+                                        },
+                                    })
+                                    .then(response => {
+                                        if (response.ok) {
+                                        const updatedFiles = files.filter((f) => f.id !== file.id);
+                                        setFiles(updatedFiles);
+                                        calculateFileStats(updatedFiles);
+                                        } else {
+                                        alert('Ошибка при удалении файла');
                                         }
-                                    }}
-                                    >
-                                    <i className="fas fa-trash-alt"></i> Удалить
-                                    </button>
+                                    });
+                                    }
+                                }}
+                                >
+                                <i className="fas fa-trash-alt"></i> Удалить
+                                </button>
 
-                                </td>
-                                <td>
-                                <GenerateTempLink fileId={file.id} />
-                                </td>
-                            </tr>
-                        ))}
+                            </td>
+                            <td>
+                            <GenerateTempLink fileId={file.id} />
+                            </td>
+                        </tr>
+                    ))}
                 </tbody>
             </table>
             ) : (
@@ -390,6 +450,10 @@ const FileManagement = () => {
 
         </div>
     );
+};
+
+FileManagement.propTypes = {
+    refresh: PropTypes.bool.isRequired,
 };
 
 export default FileManagement;

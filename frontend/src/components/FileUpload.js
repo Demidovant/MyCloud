@@ -1,13 +1,21 @@
 import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 import { API_BASE_URL } from "../config";
 import './styles/FileUpload.css';
 
-const FileUpload = () => {
+const FileUpload = ({ onFileUploaded }) => {
     const [file, setFile] = useState(null);
     const [dragging, setDragging] = useState(false);
     const [comment, setComment] = useState('');
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
     const [errorMessage, setErrorMessage] = useState(null);
+
+    const showErrorMessage = (message) => {
+        setErrorMessage(message);
+        setTimeout(() => {
+            setErrorMessage(null);
+        }, 3000);
+    };
 
     const handleFileDrop = (e) => {
         e.preventDefault();
@@ -44,17 +52,18 @@ const FileUpload = () => {
                     updateFileComment(data.id);
                     setShowSuccessMessage(true);
                     setFile(null);
-
                     setTimeout(() => {
                         setShowSuccessMessage(false);
-                        window.location.reload();
-                    }, 2000);
+                    }, 1500);
+                    if (onFileUploaded) {
+                        onFileUploaded();
+                    }
                 } else {
-                    setErrorMessage('Не удалось загрузить файл');
+                    showErrorMessage('Не удалось загрузить файл');
                 }
             })
             .catch((error) => {
-                setErrorMessage(error.message || 'Ошибка при загрузке файла');
+                showErrorMessage(error.message || 'Ошибка при загрузке файла');
             });
         }
     };
@@ -76,7 +85,7 @@ const FileUpload = () => {
             }
         })
         .catch(error => {
-            setErrorMessage(error.message || 'Ошибка при обновлении комментария');
+            showErrorMessage(error.message || 'Ошибка при обновлении комментария');
         });
     };
 
@@ -113,6 +122,8 @@ const FileUpload = () => {
                 </button>
             </div>
 
+            {(showSuccessMessage || errorMessage) && <div className="overlay"></div>}
+
             {showSuccessMessage && (
                 <div className="success-popup">
                     <p>Файл загружен!</p>
@@ -126,6 +137,10 @@ const FileUpload = () => {
             )}
         </div>
     );
+};
+
+FileUpload.propTypes = {
+    onFileUploaded: PropTypes.func.isRequired,
 };
 
 export default FileUpload;

@@ -9,6 +9,7 @@ import UserInfo from '../components/UserInfo';
 const Dashboard = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [refreshFiles, setRefreshFiles] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -72,14 +73,18 @@ const Dashboard = () => {
 
     const token = localStorage.getItem('authToken');
 
+    const handleFileUploaded = () => {
+        setRefreshFiles(prev => !prev);
+    };
+
     return (
         <div className="container">
             <div className="dashboard-content">
                 <UserInfo token={token} className="user-info" />
                 <div>
                 <h1>Панель управления пользователя</h1>
-                    <FileUpload className="file-upload" />
-                    <FileManagement token={token} className="file-management" />
+                    <FileUpload onFileUploaded={handleFileUploaded} className="file-upload" />
+                    <FileManagement token={token} refresh={refreshFiles} className="file-management" />
                 </div>
             </div>
         </div>
