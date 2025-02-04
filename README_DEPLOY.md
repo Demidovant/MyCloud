@@ -7,6 +7,13 @@
 ```bash
 sudo apt update
 sudo apt install wget unzip docker.io docker-compose -y
+sudo systemctl enable docker
+```
+
+Добавьте пользователя в группу docker
+
+```bash
+sudo usermod -aG docker $USER && newgrp docker
 ```
 
 ## Загрузка и подготовка проекта
@@ -53,6 +60,7 @@ sudo docker-compose build --no-cache && sudo docker-compose up -d
 
 ## ⚠️ Для полного удаления приложения, включая БД и загруженные файлы необходимо выполнить:
 ```bash
-cd ~/mycloud;source backend/.env;sudo docker stop $(docker ps -a -q);sudo docker rm $(docker ps -a -q);sudo docker volume rm $(docker volume ls -q);sudo docker network rm $(docker network ls -q);sudo rm -rf ${FILE_STORAGE_PATH};sudo rm -rf ${LOG_FILES_DIR};sudo systemctl restart docker.service;
- ```
+cd ~/mycloud && source backend/.env && sudo bash -c 'docker stop $(docker ps -a -q); docker rm $(docker ps -a -q); docker volume rm $(docker volume ls -q); docker rmi $(docker images); docker network rm $(docker network ls -q); rm -rfv '"${FILE_STORAGE_PATH}"'; rm -rfv '"${LOG_FILES_DIR}"'; systemctl restart docker.service'
+
+```
 

@@ -4,6 +4,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     image: mycloud_backend
+    restart: always
     env_file:
       - ./backend/.env
     ports:
@@ -21,6 +22,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     image: mycloud_frontend
+    restart: always
     ports:
       - "3000:3000"
     networks:
@@ -29,6 +31,7 @@ services:
   db:
     image: postgres:16
     container_name: postgres_16
+    restart: always
     environment:
       POSTGRES_DB: mycloud
       POSTGRES_USER: mycloud
