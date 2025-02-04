@@ -56,6 +56,9 @@ class FileViewSet(viewsets.ModelViewSet):
         if not os.path.exists(file_path):
             return Response({"detail": "File not found"}, status=status.HTTP_404_NOT_FOUND)
 
+        file.last_downloaded_at = now()
+        file.save(update_fields=['last_downloaded_at'])
+
         content_type, _ = guess_type(file_path)
 
         if content_type and 'text' in content_type:

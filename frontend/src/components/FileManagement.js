@@ -118,6 +118,7 @@ const FileManagement = () => {
                         <th>Размер</th>
                         <th>Дата загрузки</th>
                         <th>Дата обновления</th>
+                        <th>Дата последнего скачивания</th>
                         <th>Комментарий</th>
                         <th>Действия</th>
                         <th>Временная ссылка</th>
@@ -163,6 +164,7 @@ const FileManagement = () => {
                                 <td>{formatSize(file.size)}</td>
                                 <td>{new Date(file.uploaded_at).toLocaleString()}</td>
                                 <td>{new Date(file.updated_at).toLocaleString()}</td>
+                                <td>{file.last_downloaded_at ? new Date(file.last_downloaded_at).toLocaleString() : 'Никогда'}</td>
                                 <td>{file.comment || "Нет комментария"}
                                     <br />
                                     <button
@@ -258,6 +260,7 @@ const FileManagement = () => {
                                                 link.download = file.name;
                                                 link.click();
                                                 window.URL.revokeObjectURL(url);
+                                                fetchFiles(userId);
                                             })
                                             .catch(err => alert(err.message));
                                         }}
