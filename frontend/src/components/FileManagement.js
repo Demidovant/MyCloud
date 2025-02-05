@@ -125,28 +125,33 @@ const FileManagement = ({ refresh }) => {
     // Сортированный список файлов
     const sortedFiles = React.useMemo(() => {
         return [...files].sort((a, b) => {
-            if (sortConfig.key) {
-                const aValue = a[sortConfig.key];
-                const bValue = b[sortConfig.key];
+            if (!sortConfig.key) return 0;
+            const aValue = a[sortConfig.key] || '';
+            const bValue = b[sortConfig.key] || '';
 
-                if (sortConfig.key.includes('_at')) {
-                    const aDate = new Date(aValue).getTime();
-                    const bDate = new Date(bValue).getTime();
-                    return sortConfig.direction === 'asc' ? aDate - bDate : bDate - aDate;
-                }
-
-                if (typeof aValue === 'string' && typeof bValue === 'string') {
-                    return sortConfig.direction === 'asc' 
-                        ? aValue.localeCompare(bValue) 
-                        : bValue.localeCompare(aValue);
-                }
-
-                return sortConfig.direction === 'asc' 
-                    ? aValue - bValue 
-                    : bValue - aValue;
+            if (sortConfig.key.includes('_at')) {
+                const aDate = new Date(aValue).getTime();
+                const bDate = new Date(bValue).getTime();
+                return sortConfig.direction === 'asc' ? aDate - bDate : bDate - aDate;
             }
-            return 0;
-        });
+
+            if (typeof aValue === 'number' && typeof bValue === 'number') {
+                return sortConfig.direction === 'asc' ? aValue - bValue : bValue - aValue;
+            }
+
+            const aString = String(aValue).toLowerCase();
+            const bString = String(bValue).toLowerCase();
+
+            if (/^\d+$/.test(aString) && /^\d+$/.test(bString)) {
+                const aNum = parseInt(aString, 10);
+                const bNum = parseInt(bString, 10);
+                return sortConfig.direction === 'asc' ? aNum - bNum : bNum - aNum;
+            }
+
+            return sortConfig.direction === 'asc' 
+                ? aString.localeCompare(bString) 
+                : bString.localeCompare(aString);
+            });
     }, [files, sortConfig]);
 
     return (
@@ -265,6 +270,7 @@ const FileManagement = ({ refresh }) => {
                                     })
                                     .then(response => {
                                         if (response.ok) {
+                                            fetchFiles(userId);
                                             const contentType = response.headers.get('Content-Type');
                                             if (contentType && contentType.includes('text')) {
                                                 return response.text().then(text => ({ text, contentType }));
