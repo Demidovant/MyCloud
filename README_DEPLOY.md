@@ -60,7 +60,9 @@ sudo docker-compose build --no-cache && sudo docker-compose up -d
 
 ## ⚠️ Для полного удаления приложения, включая БД и загруженные файлы необходимо выполнить:
 ```bash
-cd ~/mycloud && source backend/.env && sudo bash -c 'docker stop $(docker ps -a -q); docker rm $(docker ps -a -q); docker volume rm $(docker volume ls -q); docker rmi $(docker images); docker network rm $(docker network ls -q); rm -rfv '"${FILE_STORAGE_PATH}"'; rm -rfv '"${LOG_FILES_DIR}"'; systemctl restart docker.service'
 
+
+
+cd ~/mycloud && source backend/.env && sudo bash -c 'docker stop $(docker ps -a -q); docker rm $(docker ps -a -q); docker volume rm $(docker volume ls -q); docker rmi $(docker images); docker network rm $(docker network ls -q); rm -rfv '"${FILE_STORAGE_PATH}"'; rm -rfv '"${LOG_FILES_DIR}"'; rm -rfv ~/mycloud; rm -rfv ~/main.zip; cd ~; systemctl restart docker.service'
 ```
 
