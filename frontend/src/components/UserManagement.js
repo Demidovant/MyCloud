@@ -353,7 +353,7 @@ const UserManagement = () => {
                         <ChangePassword
                             token={localStorage.getItem('authToken')}
                             userId={passwordModal.userId}
-                            closeModal={closePasswordModal}
+                            onClose={closePasswordModal}
                         />
                     </div>
                 </div>
